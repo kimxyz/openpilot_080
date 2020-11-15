@@ -213,9 +213,12 @@ class Planner():
     plan_send.plan.fcw = fcw
 
     # Send radarstate(dRel, vRel, yRel)
-    plan_send.plan.ddRel = lead_1.dRel
-    plan_send.plan.yyRel = lead_1.yRel
-    plan_send.plan.vvRel = lead_1.vRel
+    plan_send.plan.dRel1 = lead_1.dRel
+    plan_send.plan.yRel1 = lead_1.yRel
+    plan_send.plan.vRel1 = lead_1.vRel
+    plan_send.plan.dRel2 = lead_2.dRel
+    plan_send.plan.yRel2 = lead_2.yRel
+    plan_send.plan.vRel2 = lead_2.vRel
 
     pm.send('plan', plan_send)
 

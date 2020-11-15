@@ -174,9 +174,9 @@ class CarController():
     self.model_speed, self.model_sum = self.SC.calc_va(sm, CS.out.vEgo)
 
     plan = sm['plan']
-    self.dRel = plan.ddRel #EON Lead
-    self.yRel = plan.yyRel #EON Lead
-    self.vRel = plan.vvRel #EON Lead
+    self.dRel = int(plan.dRel1) #EON Lead
+    self.yRel = int(plan.yRel1) #EON Lead
+    self.vRel = int(plan.vRel1 * 3.6 + 0.5) #EON Lead
 
     path_plan = sm['pathPlan']
     self.outScale = path_plan.outputScale
@@ -272,7 +272,7 @@ class CarController():
     self.apply_accel_last = apply_accel
     self.apply_steer_last = apply_steer
 
-    if CS.acc_active and CS.lead_distance > 149 and self.dRel < ((CS.out.vEgo * CV.MS_TO_KPH)+5) and self.vRel < -5 and CS.out.vEgo > 7:
+    if CS.acc_active and CS.lead_distance > 149 and self.dRel < ((CS.out.vEgo * CV.MS_TO_KPH)+3) and self.vRel < -5 and CS.out.vEgo > 7:
       self.need_brake_timer += 1
       if self.need_brake_timer > 50:
         self.need_brake = True
