@@ -106,21 +106,21 @@ class Spdctrl(SpdController):
                 self.seq_step_debug = "d<0,거리유지"
         # 선행차량이 멀리 있는 상태에서 감속 조건
         elif 20 <= dRel < 149 and lead_objspd < -15: #정지 차량 및 급감속 차량 발견 시
-            if 149 > dRel >= 100 and (int(CS.clu_Vanz)-1) <= int(CS.VSetDis):
+            if 149 > dRel >= 100 and (int(CS.clu_Vanz)-2) <= int(CS.VSetDis):
                 self.seq_step_debug = "d>100감속"
-                lead_wait_cmd, lead_set_speed = self.get_tm_speed(CS, 15, -1)
-            elif 100 > dRel >= 80 and (int(CS.clu_Vanz)-3) <= int(CS.VSetDis):
-                self.seq_step_debug = "d>80감속"
                 lead_wait_cmd, lead_set_speed = self.get_tm_speed(CS, 15, -3)
-            elif 80 > dRel >= 60 and (int(CS.clu_Vanz)-5) <= int(CS.VSetDis):
-                self.seq_step_debug = "d>60감속"
+            elif 100 > dRel >= 80 and (int(CS.clu_Vanz)-4) <= int(CS.VSetDis):
+                self.seq_step_debug = "d>80감속"
                 lead_wait_cmd, lead_set_speed = self.get_tm_speed(CS, 15, -5)
-            elif 60 > dRel >= 40 and (int(CS.clu_Vanz)-7) <= int(CS.VSetDis):
-                self.seq_step_debug = "d>40감속"
+            elif 80 > dRel >= 60 and (int(CS.clu_Vanz)-6) <= int(CS.VSetDis):
+                self.seq_step_debug = "d>60감속"
                 lead_wait_cmd, lead_set_speed = self.get_tm_speed(CS, 15, -7)
-            elif 40 > dRel >= 20 and (int(CS.clu_Vanz)-9) <= int(CS.VSetDis):
-                self.seq_step_debug = "d>20감속"
+            elif 60 > dRel >= 40 and (int(CS.clu_Vanz)-8) <= int(CS.VSetDis):
+                self.seq_step_debug = "d>40감속"
                 lead_wait_cmd, lead_set_speed = self.get_tm_speed(CS, 15, -9)
+            elif 40 > dRel >= 20 and (int(CS.clu_Vanz)-10) <= int(CS.VSetDis):
+                self.seq_step_debug = "d>20감속"
+                lead_wait_cmd, lead_set_speed = self.get_tm_speed(CS, 15, -11)
         elif self.cruise_set_speed_kph > int(round((CS.clu_Vanz))):  #이온설정속도가 차량속도보다 큰경우
             if lead_objspd > 10 and CS.clu_Vanz > 20 and CS.VSetDis < 45: # 처음출발시 선행차량 급가속할 때 설정속도 많이 업
                 self.seq_step_debug = "SS>VS,초가"
