@@ -87,7 +87,7 @@ class Spdctrl(SpdController):
                 self.seq_step_debug = "끼어들기감지,v>=0"
                 lead_wait_cmd, lead_set_speed = self.get_tm_speed(CS, 15, -2)
                 self.cut_in = True
-            elif self.cut_in = True and (int(CS.clu_Vanz)-6) <= int(CS.VSetDis):
+            elif self.cut_in == True and (int(CS.clu_Vanz)-6) <= int(CS.VSetDis):
                 self.seq_step_debug = "끼어들기감속중"
                 lead_wait_cmd, lead_set_speed = self.get_tm_speed(CS, 15, -4)
             else:
