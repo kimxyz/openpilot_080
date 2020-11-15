@@ -91,7 +91,7 @@ class Spdctrl(SpdController):
                 self.seq_step_debug = "끼어들기감속중"
                 lead_wait_cmd, lead_set_speed = self.get_tm_speed(CS, 15, -4)
             else:
-                self.seq_step_debug = "옆차감지,거리유지"
+                self.seq_step_debug = "d2<0,거리유지"
         elif d_delta < 0: # 기준유지거리(현재속도*0.4)보다 가까이 있게 된 상황
             self.cut_in = False
             if lead_objspd < -30 or (dRel < 60 and CS.clu_Vanz > 60 and lead_objspd < -5) and (int(CS.clu_Vanz)-5) <= int(CS.VSetDis): # 끼어든 차가 급감속 하는 경우
@@ -110,7 +110,7 @@ class Spdctrl(SpdController):
                 self.seq_step_debug = "기준내,-1"
                 lead_wait_cmd, lead_set_speed = self.get_tm_speed(CS, 30, -1)
             else:
-                self.seq_step_debug = "기준내,거리유지"
+                self.seq_step_debug = "d<0,거리유지"
         # 선행차량이 멀리 있는 상태에서 감속 조건
         elif 20 <= dRel < 149 and lead_objspd < -15: #정지 차량 및 급감속 차량 발견 시
             self.cut_in = False
