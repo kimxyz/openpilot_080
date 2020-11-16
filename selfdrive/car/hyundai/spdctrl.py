@@ -81,15 +81,15 @@ class Spdctrl(SpdController):
         elif d_delta2 < 0: # 끼어드는 차 선제 감속 대응?
             if (int(CS.clu_Vanz)-1) <= int(CS.VSetDis) and vRel2 < 0 and dRele - dRelef > 3:
                 self.seq_step_debug = "끼어들기감지,v<0"
-                lead_wait_cmd, lead_set_speed = self.get_tm_speed(CS, 15, -6)
+                lead_wait_cmd, lead_set_speed = self.get_tm_speed(CS, 15, -4)
                 self.cut_in = True
             elif (int(CS.clu_Vanz)-1) <= int(CS.VSetDis) and vRel2 >= 0 and dRele - dRelef > 3:
                 self.seq_step_debug = "끼어들기감지,v>=0"
-                lead_wait_cmd, lead_set_speed = self.get_tm_speed(CS, 15, -2)
+                lead_wait_cmd, lead_set_speed = self.get_tm_speed(CS, 20, -2)
                 self.cut_in = True
             elif self.cut_in == True and (int(CS.clu_Vanz)-6) <= int(CS.VSetDis):
                 self.seq_step_debug = "끼어들기감속중"
-                lead_wait_cmd, lead_set_speed = self.get_tm_speed(CS, 15, -4)
+                lead_wait_cmd, lead_set_speed = self.get_tm_speed(CS, 15, -3)
             else:
                 self.seq_step_debug = "d2<0,거리유지"
         elif d_delta < 0: # 기준유지거리(현재속도*0.4)보다 가까이 있게 된 상황
