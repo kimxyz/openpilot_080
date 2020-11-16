@@ -324,7 +324,7 @@ class SpdController():
         else:
             btn_type, clu_speed, active_time = self.lead_control( CS, sm, CC )   # speed controller spdcontroller.py
 
-            if CS.clu_Vanz < 20 and CC.vRel <= 0:
+            if CS.clu_Vanz < 15 and CC.vRel <= 0:
                 self.btn_type = Buttons.NONE
             elif self.btn_type != Buttons.NONE:
                 pass
