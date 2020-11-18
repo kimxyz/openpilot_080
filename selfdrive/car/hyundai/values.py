@@ -60,10 +60,9 @@ class Buttons:
   SET_DECEL = 2
   GAP_DIST = 3
   CANCEL = 4
-  TEST1 = 5
-  TEST2 = 6
-  TEST3 = 7
-  TEST4 = 8
+  ALT1 = 5
+  ALT2 = 6
+  ALT3 = 7
 
 params = Params()
 fingerprint_issued_fix = params.get('FingerprintIssuedFix') == "1"

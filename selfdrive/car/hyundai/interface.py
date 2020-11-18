@@ -246,6 +246,12 @@ class CarInterface(CarInterfaceBase):
         be.type = ButtonType.gapAdjustCruise
       elif but == Buttons.CANCEL:
         be.type = ButtonType.cancel
+      elif but == Buttons.ALT1:
+        be.type = ButtonType.altButton1
+      elif but == Buttons.ALT2:
+        be.type = ButtonType.altButton2
+      elif but == Buttons.ALT3:
+        be.type = ButtonType.altButton3  
       else:
         be.type = ButtonType.unknown
       buttonEvents.append(be)
