@@ -380,15 +380,15 @@ class CarController():
       trace1.printf2( '{}'.format( str_log2 ) )
 
     
-    if self.cruise_gap == 1.0 and cruise_gap_sw == 0:
+    if self.cruise_gap == 1.0 and self.cruise_gap_sw == 0:
       can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.ALT1, clu11_speed))
-      cruise_gap_sw = 1
-    elif self.cruise_gap == 2.0 and cruise_gap_sw == 1:
+      self.cruise_gap_sw = 1
+    elif self.cruise_gap == 2.0 and self.cruise_gap_sw == 1:
       can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.ALT2, clu11_speed))
-      cruise_gap_sw = 2
-    elif self.cruise_gap == 3.0 and cruise_gap_sw == 2:
+      self.cruise_gap_sw = 2
+    elif self.cruise_gap == 3.0 and self.cruise_gap_sw == 2:
       can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.ALT3, clu11_speed))
-      cruise_gap_sw = 0
+      self.cruise_gap_sw = 0
 
 
     if pcm_cancel_cmd and self.longcontrol:
