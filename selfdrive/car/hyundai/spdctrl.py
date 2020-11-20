@@ -175,6 +175,8 @@ class Spdctrl(SpdController):
             elif d_delta == 0 and lead_objspd == 0 and self.cruise_set_speed_kph > int(CS.VSetDis) and dRel > 149:
                 self.seq_step_debug = "점진가속"
                 lead_wait_cmd, lead_set_speed = self.get_tm_speed( CS, 80, 1)
+            elif lead_objspd == 0 and int(CS.clu_Vanz) == 0 and dRel <= 6:
+                self.seq_step_debug = "출발대기"
             else:
                 self.seq_step_debug = "SS>VS,거리유지"
         elif lead_objspd >= 0 and CS.clu_Vanz >= int(CS.VSetDis) and int(CS.clu_Vanz * 0.5) < dRel < 149:
