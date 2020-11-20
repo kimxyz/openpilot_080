@@ -394,9 +394,6 @@ void encoder_thread(RotateState *rotate_state, bool raw_clips, int cam_idx) {
         if (idx_sock->send((char*)bytes.begin(), bytes.size()) < 0) {
           printf("err sending encodeIdx pkt: %s\n", strerror(errno));
         }
-        if (lh) {
-          lh_log(lh, bytes.begin(), bytes.size(), false);
-        }
       }
 
       if (raw_clips) {
@@ -753,7 +750,7 @@ int main(int argc, char** argv) {
 
     if (s.logger.part > -1) {
       new_segment = true;
-      if (tms - last_camera_seen_tms <= NO_CAMERA_PATIENCE) {
+      if (tms - last_camera_seen_tms <= NO_CAMERA_PATIENCE && s.num_encoder > 0) {
         for (int cid=0;cid<=MAX_CAM_IDX;cid++) {
           // this *should* be redundant on tici since all camera frames are synced
           new_segment &= (((s.rotate_state[cid].stream_frame_id >= s.rotate_state[cid].last_rotate_frame_id + segment_length * MAIN_FPS) &&
