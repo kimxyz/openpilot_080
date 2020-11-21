@@ -78,7 +78,7 @@ class Spdctrl(SpdController):
             self.seq_step_debug = "운전자가속"
             lead_wait_cmd = 15
         # 거리 유지 조건
-        elif d_delta2 < 0: # 끼어드는 차 선제 감속 대응?
+        elif d_delta < 0 or d_delta2 < 0: # 기준유지거리(현재속도*0.4)보다 가까이 있게 된 상황
             if (int(CS.clu_Vanz)-1) <= int(CS.VSetDis) and dRele - dRelef > 3:
                 self.seq_step_debug = "끼어들기감지"
                 lead_wait_cmd, lead_set_speed = self.get_tm_speed(CS, 15, -5)
@@ -98,39 +98,38 @@ class Spdctrl(SpdController):
             elif self.cut_in == True and (int(CS.clu_Vanz)-5) <= int(CS.VSetDis):
                 self.seq_step_debug = "끼어들기감속중"
                 lead_wait_cmd, lead_set_speed = self.get_tm_speed(CS, 20, -5)
-            else:
-                self.seq_step_debug = "d2<0,거리유지"
-        elif d_delta < 0: # 기준유지거리(현재속도*0.4)보다 가까이 있게 된 상황
-            self.cut_in = False
-            if lead_objspd < -30 or (dRel < 60 and CS.clu_Vanz > 60 and lead_objspd < -5) and (int(CS.clu_Vanz)-5) <= int(CS.VSetDis): # 끼어든 차가 급감속 하는 경우
+            elif lead_objspd < -30 or (dRel < 60 and CS.clu_Vanz > 60 and lead_objspd < -5) and (int(CS.clu_Vanz)-5) <= int(CS.VSetDis): # 끼어든 차가 급감속 하는 경우
                 self.seq_step_debug = "기준내,-5"
                 lead_wait_cmd, lead_set_speed = self.get_tm_speed(CS, 15, -5)
+                self.cut_in = False
             elif lead_objspd < -20 or (dRel < 80 and CS.clu_Vanz > 80 and lead_objspd < -5) and (int(CS.clu_Vanz)-4) <= int(CS.VSetDis):  # 끼어든 차가 급감속 하는 경우
                 self.seq_step_debug = "기준내,-4"
                 lead_wait_cmd, lead_set_speed = self.get_tm_speed(CS, 15, -4)
+                self.cut_in = False
             elif lead_objspd < -10 and (int(CS.clu_Vanz)-3) <= int(CS.VSetDis):
                 self.seq_step_debug = "기준내,-3"
                 lead_wait_cmd, lead_set_speed = self.get_tm_speed(CS, 15, -3)
-            elif lead_objspd < 0 and (int(CS.clu_Vanz)-2) <= int(CS.VSetDis):
-                self.seq_step_debug = "기준내,-2"
-                lead_wait_cmd, lead_set_speed = self.get_tm_speed(CS, 15, -2)
-            elif lead_objspd >= 0 and (int(CS.clu_Vanz)-1) <= int(CS.VSetDis): 
+                self.cut_in = False
+            elif lead_objspd < 0 and (int(CS.clu_Vanz)-1) <= int(CS.VSetDis):
                 self.seq_step_debug = "기준내,-1"
-                lead_wait_cmd, lead_set_speed = self.get_tm_speed(CS, 20, -1)
+                lead_wait_cmd, lead_set_speed = self.get_tm_speed(CS, 35, -1)
+                self.cut_in = False
+            elif lead_objspd >= 0 and int(CS.clu_Vanz) <= int(CS.VSetDis): 
+                self.seq_step_debug = "기준내,-1"
+                lead_wait_cmd, lead_set_speed = self.get_tm_speed(CS, 70, -1)
+                self.cut_in = False
             else:
-                self.seq_step_debug = "d<0,거리유지"
+                self.seq_step_debug = "거리유지"
+                self.cut_in = False
         # 선행차량이 멀리 있는 상태에서 감속 조건
         elif 20 <= dRel < 149 and lead_objspd < -15: #정지 차량 및 급감속 차량 발견 시
             self.cut_in = False
-            if 149 > dRel >= 100 and (int(CS.clu_Vanz)-3) <= int(CS.VSetDis):
-                self.seq_step_debug = "d>100감속"
-                lead_wait_cmd, lead_set_speed = self.get_tm_speed(CS, 15, -3)
-            elif 100 > dRel >= 60 and (int(CS.clu_Vanz)-7) <= int(CS.VSetDis):
+            if 149 > dRel >= 70 and (int(CS.clu_Vanz)-10) <= int(CS.VSetDis):
                 self.seq_step_debug = "d>60감속"
-                lead_wait_cmd, lead_set_speed = self.get_tm_speed(CS, 15, -7)
-            elif 60 > dRel >= 20 and (int(CS.clu_Vanz)-9) <= int(CS.VSetDis):
+                lead_wait_cmd, lead_set_speed = self.get_tm_speed(CS, 15, -5)
+            elif dRel >= 20:
                 self.seq_step_debug = "d>20감속"
-                lead_wait_cmd, lead_set_speed = self.get_tm_speed(CS, 15, -9)
+                lead_wait_cmd, lead_set_speed = self.get_tm_speed(CS, 15, -5)
         elif self.cruise_set_speed_kph > int(round((CS.clu_Vanz))):  #이온설정속도가 차량속도보다 큰경우
             self.cut_in = False
             if 10 > dRel > 3 and lead_objspd < 0 and 1 < int(CS.clu_Vanz) <= 7 and CS.VSetDis < 45:
