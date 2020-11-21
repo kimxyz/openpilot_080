@@ -244,23 +244,23 @@ class CarState(CarStateBase):
     leftBlinker = cp.vl["CGW1"]['CF_Gway_TurnSigLh'] != 0
     rightBlinker = cp.vl["CGW1"]['CF_Gway_TurnSigRh'] != 0
 
-    if leftBlinker and not rightBlinker:
-      self.left_blinker_flash = 140
-      self.right_blinker_flash = 0
-    elif rightBlinker and not leftBlinker:
-      self.right_blinker_flash = 140
-      self.left_blinker_flash = 0
-    elif leftBlinker and rightBlinker:
-      self.left_blinker_flash = 140
-      self.right_blinker_flash = 140
+    #if leftBlinker and not rightBlinker:
+    #  self.left_blinker_flash = 100
+    #  self.right_blinker_flash = 0
+    #elif rightBlinker and not leftBlinker:
+    #  self.right_blinker_flash = 100
+    #  self.left_blinker_flash = 0
+    #elif leftBlinker and rightBlinker:
+    #  self.left_blinker_flash = 100
+    #  self.right_blinker_flash = 100
 
-    if  self.left_blinker_flash:
-      self.left_blinker_flash -= 1
-    if  self.right_blinker_flash:
-      self.right_blinker_flash -= 1
+    #if  self.left_blinker_flash:
+    #  self.left_blinker_flash -= 1
+    #if  self.right_blinker_flash:
+    #  self.right_blinker_flash -= 1
 
-    leftBlinker = self.left_blinker_flash != 0
-    rightBlinker = self.right_blinker_flash != 0
+    #leftBlinker = self.left_blinker_flash != 0
+    #rightBlinker = self.right_blinker_flash != 0
     return  leftBlinker, rightBlinker
 
   @staticmethod

@@ -20,6 +20,7 @@ from common.params import Params
 import common.log as trace1
 import common.CTime1000 as tm
 
+LaneChangeState = log.PathPlan.LaneChangeState
 VisualAlert = car.CarControl.HUDControl.VisualAlert
 min_set_speed = 30 * CV.KPH_TO_MS
 
@@ -90,7 +91,8 @@ class CarController():
     self.last_resume_frame = 0
     self.lanechange_manual_timer = 0
     self.emergency_manual_timer = 0
-    self.driver_steering_torque_above_timer = 0
+    self.driver_steering_torque_above = False
+    self.driver_steering_torque_above_timer = 100
     
     self.mode_change_timer = 0
 
@@ -185,18 +187,30 @@ class CarController():
     self.angle_steers = CS.out.steeringAngle
     self.angle_diff = abs(self.angle_steers_des) - abs(self.angle_steers)
 
-    if abs(self.outScale) >= 0.9 and CS.out.vEgo > 8:
-      self.steerMax = interp(self.angle_diff, self.angle_differ_range, self.steerMax_range)
-      self.steerDeltaUp = interp(self.angle_diff, self.angle_differ_range, self.steerDeltaUp_range)
-      self.steerDeltaDown = interp(self.angle_diff, self.angle_differ_range, self.steerDeltaDown_range)
+    #if abs(self.outScale) >= 0.9 and CS.out.vEgo > 8:
+    #  self.steerMax = interp(self.angle_diff, self.angle_differ_range, self.steerMax_range)
+    #  self.steerDeltaUp = interp(self.angle_diff, self.angle_differ_range, self.steerDeltaUp_range)
+    #  self.steerDeltaDown = interp(self.angle_diff, self.angle_differ_range, self.steerDeltaDown_range)
 
-    #if abs(self.outScale) >= 1 and CS.out.vEgo > 8:
-    #  self.steerMax_timer += 1
-    #  if self.steerMax_timer > 5:
-    #    self.steerMax += int(CS.out.vEgo//2)
-    #    self.steerMax_timer = 0
-    #    if self.steerMax > SteerLimitParams.STEER_MAX:
-    #      self.steerMax = SteerLimitParams.STEER_MAX
+    if abs(self.outScale) >= 0.9 and CS.out.vEgo > 8:
+      self.steerMax_timer += 1
+      self.steerDeltaUp_timer += 1
+      self.steerDeltaDown_timer += 1
+      if self.steerMax_timer > 5:
+        self.steerMax += int(CS.out.vEgo//2)
+        self.steerMax_timer = 0
+        if self.steerMax >= int(self.params.get('SteerMaxAdj')):
+          self.steerMax = int(self.params.get('SteerMaxAdj'))
+      if self.steerDeltaUp_timer > 50:
+        self.steerDeltaUp += 1
+        self.steerDeltaUp_timer = 0
+        if self.steerDeltaUp >= 7:
+          self.steerDeltaUp = 7
+      if self.steerDeltaDown_timer > 25:
+        self.steerDeltaDown += 1
+        self.steerDeltaDown_timer = 0
+        if self.steerDeltaDown >= 15:
+          self.steerDeltaDown = 15
     else:
       self.steerMax_timer += 1
       self.steerDeltaUp_timer += 1
@@ -211,7 +225,7 @@ class CarController():
         self.steerDeltaUp_timer = 0
         if self.steerDeltaUp <= int(self.params.get('SteerDeltaUpAdj')):
           self.steerDeltaUp = int(self.params.get('SteerDeltaUpAdj'))
-      if self.steerDeltaDown_timer > 100:
+      if self.steerDeltaDown_timer > 50:
         self.steerDeltaDown -= 1
         self.steerDeltaDown_timer = 0
         if self.steerDeltaDown <= int(self.params.get('SteerDeltaDownAdj')):
@@ -222,7 +236,7 @@ class CarController():
     param.STEER_DELTA_DOWN = max(int(self.params.get('SteerDeltaDownAdj')), self.steerDeltaDown)
 
     # Steering Torque
-    if self.driver_steering_torque_above_timer:
+    if 0 <= self.driver_steering_torque_above_timer < 100:
       new_steer = actuators.steer * self.steerMax * (self.driver_steering_torque_above_timer / 100)
     else:
       new_steer = actuators.steer * self.steerMax
@@ -252,19 +266,29 @@ class CarController():
       lkas_active = enabled and not spas_active
 
     if (( CS.out.leftBlinker and not CS.out.rightBlinker) or ( CS.out.rightBlinker and not CS.out.leftBlinker)) and CS.out.vEgo < LANE_CHANGE_SPEED_MIN:
-      self.lanechange_manual_timer = 10
+      self.lanechange_manual_timer = 100
     if CS.out.leftBlinker and CS.out.rightBlinker:
-      self.emergency_manual_timer = 10
-    if abs(CS.out.steeringTorque) > 200:
-      self.driver_steering_torque_above_timer = 100
+      self.emergency_manual_timer = 100
     if self.lanechange_manual_timer:
       lkas_active = 0
     if self.lanechange_manual_timer > 0:
       self.lanechange_manual_timer -= 1
     if self.emergency_manual_timer > 0:
       self.emergency_manual_timer -= 1
-    if self.driver_steering_torque_above_timer > 0:
+
+    if abs(CS.out.steeringTorque) > 200 and CS.out.vEgo < LANE_CHANGE_SPEED_MIN:
+      self.driver_steering_torque_above = True
+    else:
+      self.driver_steering_torque_above = False
+
+    if self.driver_steering_torque_above == True:
       self.driver_steering_torque_above_timer -= 1
+      if self.driver_steering_torque_above_timer <= 0:
+        self.driver_steering_torque_above_timer = 0
+    elif self.driver_steering_torque_above == False:
+      self.driver_steering_torque_above_timer += 2
+      if self.driver_steering_torque_above_timer >= 100:
+        self.driver_steering_torque_above_timer = 100
 
     if not lkas_active:
       apply_steer = 0
