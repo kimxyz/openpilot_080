@@ -22,8 +22,8 @@ if not EnableLogger:
   _AWARENESS_TIME = 3600.
 else:
   _AWARENESS_TIME = 35.  # one minute limit without user touching steering wheels make the car enter a terminal status
-_AWARENESS_PRE_TIME_TILL_TERMINAL = 7.  # a first alert is issued 15s before expiration
-_AWARENESS_PROMPT_TIME_TILL_TERMINAL = 5.  # a second alert is issued 6s before start decelerating the car
+_AWARENESS_PRE_TIME_TILL_TERMINAL = 12.  # a first alert is issued 15s before expiration
+_AWARENESS_PROMPT_TIME_TILL_TERMINAL = 6.  # a second alert is issued 6s before start decelerating the car
 if not EnableDriverMonitoring and not EnableLogger:
   _DISTRACTED_TIME = 3600.
 else:
@@ -31,7 +31,7 @@ else:
 _DISTRACTED_PRE_TIME_TILL_TERMINAL = 8.
 _DISTRACTED_PROMPT_TIME_TILL_TERMINAL = 6.
 
-_FACE_THRESHOLD = 0.8
+_FACE_THRESHOLD = 0.9
 _EYE_THRESHOLD = 0.6
 _SG_THRESHOLD = 0.5
 _BLINK_THRESHOLD = 0.5
