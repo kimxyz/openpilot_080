@@ -67,6 +67,7 @@ LogCameraInfo cameras_logged[LOG_CAMERA_ID_MAX] = {
     .stream_type = VISION_STREAM_YUV,
     .filename = "fcamera.hevc",
     .frame_packet_name = "frame",
+    .encode_idx_name = "encodeIdx",
     .fps = MAIN_FPS,
     .bitrate = MAIN_BITRATE,
     .is_h265 = true,
@@ -77,6 +78,7 @@ LogCameraInfo cameras_logged[LOG_CAMERA_ID_MAX] = {
     .stream_type = VISION_STREAM_YUV_FRONT,
     .filename = "dcamera.hevc",
     .frame_packet_name = "frontFrame",
+    .encode_idx_name = "frontEncodeIdx",
     .fps = MAIN_FPS, // on EONs, more compressed this way
     .bitrate = DCAM_BITRATE,
     .is_h265 = true,
@@ -87,6 +89,7 @@ LogCameraInfo cameras_logged[LOG_CAMERA_ID_MAX] = {
     .stream_type = VISION_STREAM_YUV_WIDE,
     .filename = "ecamera.hevc",
     .frame_packet_name = "wideFrame",
+    .encode_idx_name = "wideEncodeIdx",
     .fps = MAIN_FPS,
     .bitrate = MAIN_BITRATE,
     .is_h265 = true,
@@ -232,6 +235,9 @@ void encoder_thread(RotateState *rotate_state, bool raw_clips, int cam_idx) {
   s.num_encoder += 1;
   pthread_mutex_unlock(&s.rotate_lock);
 
+  PubSocket *idx_sock = PubSocket::create(s.ctx, cameras_logged[cam_idx].encode_idx_name);
+  assert(idx_sock != NULL);
+
   LoggerHandle *lh = NULL;
 
   while (!do_exit) {
@@ -371,12 +377,8 @@ void encoder_thread(RotateState *rotate_state, bool raw_clips, int cam_idx) {
 
         // publish encode index
         MessageBuilder msg;
-        // this is really ugly
-        auto eidx = cam_idx == LOG_CAMERA_ID_DCAMERA ? msg.initEvent().initFrontEncodeIdx() :
-                    (cam_idx == LOG_CAMERA_ID_ECAMERA ? msg.initEvent().initWideEncodeIdx() : msg.initEvent().initEncodeIdx());
+        auto eidx = msg.initEvent().initEncodeIdx();
         eidx.setFrameId(extra.frame_id);
-        eidx.setTimestampSof(extra.timestamp_sof);
-        eidx.setTimestampEof(extra.timestamp_eof);
   #ifdef QCOM2
         eidx.setType(cereal::EncodeIndex::Type::FULL_H_E_V_C);
   #else
@@ -388,8 +390,9 @@ void encoder_thread(RotateState *rotate_state, bool raw_clips, int cam_idx) {
         eidx.setSegmentId(out_id);
 
         auto bytes = msg.toBytes();
-        if (lh) {
-          lh_log(lh, bytes.begin(), bytes.size(), false);
+
+        if (idx_sock->send((char*)bytes.begin(), bytes.size()) < 0) {
+          printf("err sending encodeIdx pkt: %s\n", strerror(errno));
         }
       }
 
@@ -446,6 +449,8 @@ void encoder_thread(RotateState *rotate_state, bool raw_clips, int cam_idx) {
 
     visionstream_destroy(&stream);
   }
+
+  delete idx_sock;
 
   if (encoder_inited) {
     LOG("encoder destroy");
@@ -599,7 +604,7 @@ int main(int argc, char** argv) {
   int err;
 
 #ifdef QCOM
-  setpriority(PRIO_PROCESS, 0, -12);
+  set_realtime_priority(50);
 #endif
 
   if (argc > 1 && strcmp(argv[1], "--bootlog") == 0) {

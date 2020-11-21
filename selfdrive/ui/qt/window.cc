@@ -10,7 +10,6 @@
 #include <QMouseEvent>
 
 #include "window.hpp"
-#include "offroad/input_field.hpp"
 #include "offroad/settings.hpp"
 #include "offroad/onboarding.hpp"
 
@@ -22,18 +21,6 @@
 #define BACKLIGHT_TS 2.00
 
 volatile sig_atomic_t do_exit = 0;
-
-static void handle_display_state(UIState *s, int dt, bool user_input) {
-  static int awake_timeout = 0;
-  awake_timeout = std::max(awake_timeout-dt, 0);
-
-  if (user_input || s->ignition || s->started) {
-    s->awake = true;
-    awake_timeout = 30*UI_FREQ;
-  } else if (awake_timeout == 0){
-    s->awake = false;
-  }
-}
 
 static void set_backlight(int brightness){
   std::ofstream brightness_control("/sys/class/backlight/panel0-backlight/brightness");
@@ -50,17 +37,14 @@ MainWindow::MainWindow(QWidget *parent) : QWidget(parent) {
   set_core_affinity(7);
 #endif
 
-  glWindow = new GLWindow(this);
+  GLWindow *glWindow = new GLWindow(this);
   main_layout->addWidget(glWindow);
 
-  settingsWindow = new SettingsWindow(this);
+  SettingsWindow *settingsWindow = new SettingsWindow(this);
   main_layout->addWidget(settingsWindow);
 
-  onboardingWindow = new OnboardingWindow(this);
+  OnboardingWindow *onboardingWindow = new OnboardingWindow(this);
   main_layout->addWidget(onboardingWindow);
-
-  InputField *inputField = new InputField(this);
-  main_layout->addWidget(inputField);
 
   main_layout->setMargin(0);
   setLayout(main_layout);
@@ -71,9 +55,6 @@ MainWindow::MainWindow(QWidget *parent) : QWidget(parent) {
   main_layout->setCurrentWidget(onboardingWindow);
   QObject::connect(onboardingWindow, SIGNAL(onboardingDone()), this, SLOT(closeSettings()));
   onboardingWindow->updateActiveScreen();
-
-  // TODO: this is needed to make first page not squished, why?
-  main_layout->setSizeConstraint(QLayout::SetMinimumSize);
 
   setStyleSheet(R"(
     * {
@@ -89,14 +70,6 @@ void MainWindow::openSettings() {
 
 void MainWindow::closeSettings() {
   main_layout->setCurrentIndex(0);
-}
-
-
-bool MainWindow::eventFilter(QObject *obj, QEvent *event){
-  if (event->type() == QEvent::MouseButtonPress) {
-    glWindow->wake();
-  }
-  return false;
 }
 
 
@@ -134,8 +107,6 @@ void GLWindow::initializeGL() {
   ui_state->fb_h = vwp_h;
   ui_init(ui_state);
 
-  wake();
-
   timer->start(0);
   backlight_timer->start(BACKLIGHT_DT * 100);
 }
@@ -148,9 +119,11 @@ void GLWindow::backlightUpdate(){
   smooth_brightness = clipped_brightness * k + smooth_brightness * (1.0f - k);
   int brightness = smooth_brightness;
 
-  if (!ui_state->awake){
-    brightness = 0;
+#ifdef QCOM2
+  if (!ui_state->started){
+    brightness = 150;
   }
+#endif
 
   std::thread{set_backlight, brightness}.detach();
 }
@@ -162,10 +135,6 @@ void GLWindow::timerUpdate(){
     timer->setInterval(onroad ? 0 : 1000);
   }
 #endif
-
-  // Fix awake timeout if running 1 Hz when offroad
-  int dt = timer->interval() == 0 ? 1 : 20;
-  handle_display_state(ui_state, dt, false);
 
   ui_update(ui_state);
   repaint();
@@ -179,13 +148,7 @@ void GLWindow::paintGL() {
   ui_draw(ui_state);
 }
 
-void GLWindow::wake(){
-  handle_display_state(ui_state, 1, true);
-}
-
 void GLWindow::mousePressEvent(QMouseEvent *e) {
-  wake();
-
   // Settings button click
   if (!ui_state->scene.uilayout_sidebarcollapsed && settings_btn.ptInRect(e->x(), e->y())) {
     emit openSettings();
