@@ -80,8 +80,6 @@ from multiprocessing import Process
 # Run scons
 spinner = Spinner()
 spinner.update("0")
-if __name__ != "__main__":
-  spinner.close()
 
 if not prebuilt:
   for retry in [True, False]:
@@ -373,8 +371,11 @@ def kill_managed_process(name):
         join_process(running[name], 15)
         if running[name].exitcode is None:
           cloudlog.critical("unkillable process %s failed to die!" % name)
-          os.system("date >> /sdcard/unkillable_reboot")
-          HARDWARE.reboot()
+          # TODO: Use method from HARDWARE
+          if ANDROID:
+            cloudlog.critical("FORCE REBOOTING PHONE!")
+            os.system("date >> /sdcard/unkillable_reboot")
+            os.system("reboot")
           raise RuntimeError
       else:
         cloudlog.info("killing %s with SIGKILL" % name)

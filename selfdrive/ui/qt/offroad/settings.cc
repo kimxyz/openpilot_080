@@ -12,7 +12,6 @@
 
 #include "wifi.hpp"
 #include "settings.hpp"
-#include "input_field.hpp"
 
 #include "common/params.h"
 
@@ -168,7 +167,7 @@ QWidget * device_panel() {
 }
 
 QWidget * developer_panel() {
-  QVBoxLayout *main_layout = new QVBoxLayout;
+  QVBoxLayout *developer_layout = new QVBoxLayout;
 
   // TODO: enable SSH toggle and github keys
 
@@ -183,11 +182,11 @@ QWidget * developer_panel() {
 
   for (auto l : labels) {
     QString text = QString::fromStdString(l.first + ": " + l.second);
-    main_layout->addWidget(new QLabel(text));
+    developer_layout->addWidget(new QLabel(text));
   }
 
   QWidget *widget = new QWidget;
-  widget->setLayout(main_layout);
+  widget->setLayout(developer_layout);
   return widget;
 }
 

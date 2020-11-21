@@ -307,8 +307,7 @@ void fill_xyzt(cereal::ModelDataV2::XYZTData::Builder xyzt, const float * data,
 
 void model_publish_v2(PubMaster &pm, uint32_t vipc_frame_id, uint32_t frame_id,
                      uint32_t vipc_dropped_frames, float frame_drop,
-                     const ModelDataRaw &net_outputs, uint64_t timestamp_eof,
-                     float model_execution_time) {
+                     const ModelDataRaw &net_outputs, uint64_t timestamp_eof) {
   // make msg
   MessageBuilder msg;
   auto framed = msg.initEvent(frame_drop < MAX_FRAME_DROP).initModelV2();
@@ -317,7 +316,6 @@ void model_publish_v2(PubMaster &pm, uint32_t vipc_frame_id, uint32_t frame_id,
   framed.setFrameAge(frame_age);
   framed.setFrameDropPerc(frame_drop * 100);
   framed.setTimestampEof(timestamp_eof);
-  framed.setModelExecutionTime(model_execution_time);
 
   // plan 
   int plan_mhp_max_idx = 0;
@@ -387,18 +385,15 @@ void model_publish_v2(PubMaster &pm, uint32_t vipc_frame_id, uint32_t frame_id,
 }
 
 void model_publish(PubMaster &pm, uint32_t vipc_frame_id, uint32_t frame_id,
-                   uint32_t vipc_dropped_frames, float frame_drop,
-                   const ModelDataRaw &net_outputs, uint64_t timestamp_eof,
-                   float model_execution_time) {
-
+                   uint32_t vipc_dropped_frames, float frame_drop, const ModelDataRaw &net_outputs, uint64_t timestamp_eof) {
   uint32_t frame_age = (frame_id > vipc_frame_id) ? (frame_id - vipc_frame_id) : 0;
+
   MessageBuilder msg;
   auto framed = msg.initEvent(frame_drop < MAX_FRAME_DROP).initModel();
   framed.setFrameId(vipc_frame_id);
   framed.setFrameAge(frame_age);
   framed.setFrameDropPerc(frame_drop * 100);
   framed.setTimestampEof(timestamp_eof);
-  framed.setModelExecutionTime(model_execution_time);
 
   // Find the distribution that corresponds to the most probable plan
   int plan_mhp_max_idx = 0;
@@ -466,8 +461,7 @@ void model_publish(PubMaster &pm, uint32_t vipc_frame_id, uint32_t frame_id,
 }
 
 void posenet_publish(PubMaster &pm, uint32_t vipc_frame_id, uint32_t frame_id,
-                     uint32_t vipc_dropped_frames, float frame_drop,
-                     const ModelDataRaw &net_outputs, uint64_t timestamp_eof) {
+                     uint32_t vipc_dropped_frames, float frame_drop, const ModelDataRaw &net_outputs, uint64_t timestamp_eof) {
   float trans_arr[3];
   float trans_std_arr[3];
   float rot_arr[3];
