@@ -46,6 +46,7 @@ typedef struct VIPCBuf {
 typedef struct VIPCBufExtra {
   // only for yuv
   uint32_t frame_id;
+  uint64_t timestamp_sof;
   uint64_t timestamp_eof;
 } VIPCBufExtra;
 
