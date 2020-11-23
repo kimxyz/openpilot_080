@@ -135,24 +135,24 @@ static void ui_draw_sidebar_temp_metric(UIState *s) {
       {cereal::ThermalData::ThermalStatus::RED, 2},
       {cereal::ThermalData::ThermalStatus::DANGER, 3}};
   std::string temp_val = std::to_string((int)s->scene.thermal.getAmbient()) + "°C";
-  ui_draw_sidebar_metric(s, "온도", temp_val.c_str(), temp_severity_map[s->scene.thermal.getThermalStatus()], 0, NULL);
+  ui_draw_sidebar_metric(s, "시스템온도", temp_val.c_str(), temp_severity_map[s->scene.thermal.getThermalStatus()], 0, NULL);
 }
 
 static void ui_draw_sidebar_panda_metric(UIState *s) {
   const int panda_y_offset = 32 + 148;
 
   int panda_severity = 0;
-  std::string panda_message = "VEHICLE\nONLINE";
+  std::string panda_message = "차량\n연결됨";
   if (s->scene.hwType == cereal::HealthData::HwType::UNKNOWN) {
     panda_severity = 2;
-    panda_message = "NO\nVEHICLE";
+    panda_message = "차량\n연결안됨";
   } else if (s->started) {
-    if (s->scene.satelliteCount < 6) {
-      panda_severity = 1;
-      panda_message = "VEHICLE\nNO GPS";
-    } else {
+  	if (s->scene.satelliteCount <= 0 || s->scene.satelliteCount == "") {
+  	  panda_severity = 0;
+  	  panda_message = "차량\n연결됨";
+  	} else {
       panda_severity = 0;
-      panda_message = "VEHICLE\nGPS 양호";
+      panda_message = "차량연결됨\nGPS : " +  to_string((int)s->scene.satelliteCount);
     }
   }
   ui_draw_sidebar_metric(s, NULL, NULL, panda_severity, panda_y_offset, panda_message.c_str());
@@ -160,9 +160,9 @@ static void ui_draw_sidebar_panda_metric(UIState *s) {
 
 static void ui_draw_sidebar_connectivity(UIState *s) {
   static std::map<NetStatus, std::pair<const char *, int>> connectivity_map = {
-    {NET_ERROR, {"CONNECT\nERROR", 2}},
-    {NET_CONNECTED, {"CONNECT\nONLINE", 0}},
-    {NET_DISCONNECTED, {"CONNECT\nOFFLINE", 1}},
+    {NET_ERROR, {"인터넷\n에러", 2}},
+    {NET_CONNECTED, {"인터넷\n온라인", 0}},
+    {NET_DISCONNECTED, {"인터넷\n오프라인", 1}},
   };
   auto net_params = connectivity_map[s->scene.athenaStatus];
   ui_draw_sidebar_metric(s, NULL, NULL, net_params.second, 180+158, net_params.first);

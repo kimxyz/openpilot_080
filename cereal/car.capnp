@@ -100,6 +100,7 @@ struct CarEvent @0x9b1657f34caf3ad3 {
     deviceFalling @90;
     fanMalfunction @91;
     cameraMalfunction @92;
+    modelLagWarning @93;
 
     gasUnavailableDEPRECATED @3;
     dataNeededDEPRECATED @16;
@@ -116,14 +117,14 @@ struct CarEvent @0x9b1657f34caf3ad3 {
     canErrorPersistentDEPRECATED @83;
     focusRecoverActiveDEPRECATED @86;
     neosUpdateRequiredDEPRECATED @88;
-    laneChangeManual @93;
-    emgButtonManual @94;
-    driverSteering @95;
-    modeChangeOpenpilot @96;
-    modeChangeDistcurv @97;
-    modeChangeDistance @98;
-    modeChangeOneway @99;
-    needBrake @100;
+    laneChangeManual @94;
+    emgButtonManual @95;
+    driverSteering @96;
+    modeChangeOpenpilot @97;
+    modeChangeDistcurv @98;
+    modeChangeDistance @99;
+    modeChangeOneway @100;
+    needBrake @101;
   }
 }
 
