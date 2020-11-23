@@ -152,7 +152,7 @@ static void ui_draw_sidebar_panda_metric(UIState *s) {
   	  panda_message = "차량\n연결됨";
   	} else {
       panda_severity = 0;
-      panda_message = "차량연결됨\nGPS : " +  std::to_string((int)s->scene.satelliteCount);
+      panda_message = "차량연결됨\nGPS : " + std::to_string((int)s->scene.satelliteCount);
     }
   }
   ui_draw_sidebar_metric(s, NULL, NULL, panda_severity, panda_y_offset, panda_message.c_str());
