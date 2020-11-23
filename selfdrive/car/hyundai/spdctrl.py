@@ -119,12 +119,12 @@ class Spdctrl(SpdController):
                 self.seq_step_debug = "거리유지"
                 self.cut_in = False
         # 선행차량이 멀리 있는 상태에서 감속 조건
-        elif 20 <= dRel < 149 and lead_objspd < -15: #정지 차량 및 급감속 차량 발견 시
+        elif 20 <= dRel < 149 and lead_objspd < -20: #정지 차량 및 급감속 차량 발견 시
             self.cut_in = False
-            if 149 > dRel >= 65 and (int(CS.clu_Vanz)-10) <= int(CS.VSetDis):
-                self.seq_step_debug = "d>65감속"
-                lead_wait_cmd, lead_set_speed = self.get_tm_speed(CS, 8, -5)
-            elif 65 > dRel >= 30:
+            if 149 > dRel >= 80 and (int(CS.clu_Vanz)-10) <= int(CS.VSetDis) and int(CS.VSetDis) > 50:
+                self.seq_step_debug = "d>80감속"
+                lead_wait_cmd, lead_set_speed = self.get_tm_speed(CS, 7, -5)
+            elif 80 > dRel >= 30:
                 self.seq_step_debug = "d>30감속"
                 lead_wait_cmd, lead_set_speed = self.get_tm_speed(CS, 7, -10)
         elif self.cruise_set_speed_kph > int(round((CS.clu_Vanz))):  #이온설정속도가 차량속도보다 큰경우
