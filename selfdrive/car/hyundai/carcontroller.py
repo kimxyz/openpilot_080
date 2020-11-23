@@ -266,9 +266,9 @@ class CarController():
       lkas_active = enabled and not spas_active
 
     if (( CS.out.leftBlinker and not CS.out.rightBlinker) or ( CS.out.rightBlinker and not CS.out.leftBlinker)) and CS.out.vEgo < LANE_CHANGE_SPEED_MIN:
-      self.lanechange_manual_timer = 100
+      self.lanechange_manual_timer = 50
     if CS.out.leftBlinker and CS.out.rightBlinker:
-      self.emergency_manual_timer = 100
+      self.emergency_manual_timer = 50
     if self.lanechange_manual_timer:
       lkas_active = 0
     if self.lanechange_manual_timer > 0:
