@@ -132,10 +132,10 @@ class CarController():
     self.longcontrol = CP.openpilotLongitudinalControl
     self.scc_live = not CP.radarOffCan
 
-    self.angle_differ_range = [0, 40]
+    self.angle_differ_range = [0, 45]
     self.steerMax_range = [255, SteerLimitParams.STEER_MAX]
-    self.steerDeltaUp_range = [int(self.params.get('SteerDeltaUpAdj')), 7]
-    self.steerDeltaDown_range = [int(self.params.get('SteerDeltaDownAdj')), 15]
+    self.steerDeltaUp_range = [int(self.params.get('SteerDeltaUpAdj')), 5]
+    self.steerDeltaDown_range = [int(self.params.get('SteerDeltaDownAdj')), 10]
 
     self.steerMax = 255
     self.steerDeltaUp = int(self.params.get('SteerDeltaUpAdj'))
@@ -187,30 +187,30 @@ class CarController():
     self.angle_steers = CS.out.steeringAngle
     self.angle_diff = abs(self.angle_steers_des) - abs(self.angle_steers)
 
-    #if abs(self.outScale) >= 0.9 and CS.out.vEgo > 8:
-    #  self.steerMax = interp(self.angle_diff, self.angle_differ_range, self.steerMax_range)
-    #  self.steerDeltaUp = interp(self.angle_diff, self.angle_differ_range, self.steerDeltaUp_range)
-    #  self.steerDeltaDown = interp(self.angle_diff, self.angle_differ_range, self.steerDeltaDown_range)
-
     if abs(self.outScale) >= 0.9 and CS.out.vEgo > 8:
-      self.steerMax_timer += 1
-      self.steerDeltaUp_timer += 1
-      self.steerDeltaDown_timer += 1
-      if self.steerMax_timer > 5:
-        self.steerMax += int(CS.out.vEgo//2)
-        self.steerMax_timer = 0
-        if self.steerMax >= int(self.params.get('SteerMaxAdj')):
-          self.steerMax = int(self.params.get('SteerMaxAdj'))
-      if self.steerDeltaUp_timer > 50:
-        self.steerDeltaUp += 1
-        self.steerDeltaUp_timer = 0
-        if self.steerDeltaUp >= 7:
-          self.steerDeltaUp = 7
-      if self.steerDeltaDown_timer > 25:
-        self.steerDeltaDown += 1
-        self.steerDeltaDown_timer = 0
-        if self.steerDeltaDown >= 15:
-          self.steerDeltaDown = 15
+      self.steerMax = interp(self.angle_diff, self.angle_differ_range, self.steerMax_range)
+      self.steerDeltaUp = interp(self.angle_diff, self.angle_differ_range, self.steerDeltaUp_range)
+      self.steerDeltaDown = interp(self.angle_diff, self.angle_differ_range, self.steerDeltaDown_range)
+
+    #if abs(self.outScale) >= 0.9 and CS.out.vEgo > 8:
+    #  self.steerMax_timer += 1
+    #  self.steerDeltaUp_timer += 1
+    #  self.steerDeltaDown_timer += 1
+    #  if self.steerMax_timer > 5:
+    #    self.steerMax += int(CS.out.vEgo//2)
+    #    self.steerMax_timer = 0
+    #    if self.steerMax >= int(self.params.get('SteerMaxAdj')):
+    #      self.steerMax = int(self.params.get('SteerMaxAdj'))
+    #  if self.steerDeltaUp_timer > 50:
+    #    self.steerDeltaUp += 1
+    #    self.steerDeltaUp_timer = 0
+    #    if self.steerDeltaUp >= 7:
+    #      self.steerDeltaUp = 7
+    #  if self.steerDeltaDown_timer > 25:
+    #    self.steerDeltaDown += 1
+    #    self.steerDeltaDown_timer = 0
+    #    if self.steerDeltaDown >= 15:
+    #      self.steerDeltaDown = 15
     else:
       self.steerMax_timer += 1
       self.steerDeltaUp_timer += 1
@@ -286,7 +286,7 @@ class CarController():
       if self.driver_steering_torque_above_timer <= 0:
         self.driver_steering_torque_above_timer = 0
     elif self.driver_steering_torque_above == False:
-      self.driver_steering_torque_above_timer += 2
+      self.driver_steering_torque_above_timer += 5
       if self.driver_steering_torque_above_timer >= 100:
         self.driver_steering_torque_above_timer = 100
 

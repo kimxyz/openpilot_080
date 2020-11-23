@@ -89,8 +89,8 @@ class PathPlanner():
     self.lane_change_adjust_vel = [8.3, 16, 22, 30]
     self.lane_change_adjust_new = 0.0
 
-    self.angle_differ_range = [0, 40]
-    self.steerRatio_range = [CP.steerRatio, 18]
+    self.angle_differ_range = [0, 45]
+    self.steerRatio_range = [CP.steerRatio, 17.5]
     self.new_steerRatio = CP.steerRatio
 
     self.new_steer_rate_cost = CP.steerRateCost
@@ -145,22 +145,22 @@ class PathPlanner():
     self.angle_diff = abs(anglesteer_desire) - abs(anglesteer_current)
 
     if abs(output_scale) >= 0.9 and v_ego > 8:
-      #self.new_steerRatio = interp(self.angle_diff, self.angle_differ_range, self.steerRatio_range)
+      self.new_steerRatio = interp(self.angle_diff, self.angle_differ_range, self.steerRatio_range)
       #self.new_steer_rate_cost = interp(self.angle_diff, self.angle_differ_range, self.steer_rate_cost_range)
     #if abs(output_scale) >= 1 and v_ego > 8 and ((abs(anglesteer_desire) - abs(anglesteer_current)) > 20):
-      self.mpc_frame += 1
-      if self.mpc_frame % 10 == 0:
-        self.new_steerRatio += (round(v_ego, 1) * 0.025)
-        if live_steer_ratio != CP.steerRatio:        
-          if self.new_steerRatio >= live_steer_ratio:
-            self.new_steerRatio = live_steer_ratio
-        else:
-          if self.new_steerRatio >= 17.5:
-            self.new_steerRatio = 17.5
-        self.mpc_frame = 0
+    #  self.mpc_frame += 1
+    #  if self.mpc_frame % 10 == 0:
+    #    self.new_steerRatio += (round(v_ego, 1) * 0.025)
+    #    if live_steer_ratio != CP.steerRatio:        
+    #      if self.new_steerRatio >= live_steer_ratio:
+    #        self.new_steerRatio = live_steer_ratio
+    #    else:
+    #      if self.new_steerRatio >= 17.5:
+    #        self.new_steerRatio = 17.5
+    #    self.mpc_frame = 0
     else:
       self.mpc_frame += 1
-      if self.mpc_frame % 10 == 0:
+      if self.mpc_frame % 5 == 0:
         self.new_steerRatio -= 0.1
         if self.new_steerRatio <= CP.steerRatio:
           self.new_steerRatio = CP.steerRatio
