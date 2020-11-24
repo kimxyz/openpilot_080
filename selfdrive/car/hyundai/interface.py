@@ -238,6 +238,8 @@ class CarInterface(CarInterfaceBase):
     ret.steeringRateLimited = self.CC.steer_rate_limited if self.CC is not None else False
 
     ret.cruiseGapSet = self.cruise_gap
+    print('cruisegap={}'.format(self.cruise_gap))
+
 
     # low speed steer alert hysteresis logic (only for cars with steer cut off above 10 m/s)
     if ret.vEgo > (self.CP.minSteerSpeed + .84) or not self.CC.enabled:
@@ -306,21 +308,23 @@ class CarInterface(CarInterfaceBase):
           if self.cruise_gap_change == 0 and self.cruise_gap_change_timer < 1:
             self.cruise_gap_change = 1
             self.cruise_gap -= 1
+            self.cruise_gap_change_timer += 1
           elif self.cruise_gap_change == 1 and self.cruise_gap_change_timer < 1:
             self.cruise_gap_change = 2
             self.cruise_gap -= 1
+            self.cruise_gap_change_timer += 1
           elif self.cruise_gap_change == 2 and self.cruise_gap_change_timer < 1:
             self.cruise_gap_change = 3
             self.cruise_gap -= 1
+            self.cruise_gap_change_timer += 1
           elif self.cruise_gap_change == 3 and self.cruise_gap_change_timer < 1:
             self.cruise_gap_change = 0
             self.cruise_gap -= 1
+            self.cruise_gap_change_timer += 1
           if self.cruise_gap < 1:
             self.cruise_gap = 4
-          self.cruise_gap_change_timer += 1
-
-          print('cruisegap={}'.format(self.cruise_gap))
-
+      for b in not self.buttonEvents:
+        self.cruise_gap_change_timer = 0
 
     ret.events = events.to_msg()
     self.CS.out = ret.as_reader()
