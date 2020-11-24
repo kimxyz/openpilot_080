@@ -30,12 +30,12 @@ class CarInterface(CarInterfaceBase):
     ret.safetyModel = car.CarParams.SafetyModel.hyundai
 
     # Most Hyundai car ports are community features for now
-    ret.communityFeature = candidate not in [CAR.SONATA, CAR.PALISADE]
+    ret.communityFeature = False
 
-    ret.steerActuatorDelay = 0.3  # Default delay not used, check pathplanner for BPs
-    ret.steerRateCost = 0.5
-    ret.steerLimitTimer = 0.1
-    tire_stiffness_factor = 0.7
+    ret.steerActuatorDelay = 0.35  # Default delay not used, check pathplanner for BPs
+    ret.steerRateCost = 0.4
+    ret.steerLimitTimer = 0.4
+    tire_stiffness_factor = 0.85
 
     #Long tuning Params -  make individual params for cars, baseline Hyundai genesis
     ret.longitudinalTuning.kpBP = [0., 1., 10., 35.]
@@ -49,11 +49,22 @@ class CarInterface(CarInterfaceBase):
     ret.brakeMaxBP = [0., 5., 5.1]
     ret.brakeMaxV = [3.5, 3.5, 3.5]  # safety limits to stop unintended deceleration
 
-    ret.lateralTuning.pid.kpBP = [0., 10., 30.]
-    ret.lateralTuning.pid.kpV = [0.01, 0.02, 0.03]
-    ret.lateralTuning.pid.kiBP = [0., 10., 30.]
-    ret.lateralTuning.pid.kiV = [0.001, 0.0015, 0.002]
-    ret.lateralTuning.pid.kf = 0.00005
+    #ret.lateralTuning.pid.kpBP = [0., 10., 30.]
+    #ret.lateralTuning.pid.kpV = [0.01, 0.02, 0.03]
+    #ret.lateralTuning.pid.kiBP = [0., 10., 30.]
+    #ret.lateralTuning.pid.kiV = [0.001, 0.0015, 0.002]
+    #ret.lateralTuning.pid.kf = 0.00005
+    ret.lateralTuning.init('lqr')
+    ret.lateralTuning.lqr.scale = 1500
+    ret.lateralTuning.lqr.ki = 0.01
+    ret.lateralTuning.lqr.a = [0., 1., -0.22619643, 1.21822268]
+    ret.lateralTuning.lqr.b = [-1.92006585e-04, 3.95603032e-05]
+    ret.lateralTuning.lqr.c = [1., 0.]
+    ret.lateralTuning.lqr.k = [-110., 451.]
+    ret.lateralTuning.lqr.l = [0.33, 0.318]
+    ret.lateralTuning.lqr.dcGain = 0.0027
+    ret.steerMaxV = [1.5]
+    ret.steerMaxBP = [0.]
 
     if candidate in [CAR.SANTA_FE, CAR.SANTA_FE_2017]:
       ret.mass = 3982. * CV.LB_TO_KG + STD_CARGO_KG
@@ -109,9 +120,9 @@ class CarInterface(CarInterfaceBase):
       ret.wheelbase = 3.01
       ret.steerRatio = 16.5
     elif candidate in [CAR.KIA_OPTIMA, CAR.KIA_OPTIMA_HEV]:
-      ret.mass = 3558. * CV.LB_TO_KG
+      ret.mass = 1595. + STD_CARGO_KG
       ret.wheelbase = 2.80
-      ret.steerRatio = 13.75 * 1.15
+      ret.steerRatio = 13.8
     elif candidate == CAR.KIA_STINGER:
       ret.mass = 1825. + STD_CARGO_KG
       ret.wheelbase = 2.78
@@ -243,8 +254,8 @@ class CarInterface(CarInterfaceBase):
     if self.CP.sccBus == 2:
       self.CP.enableCruise = self.CC.usestockscc
 
-    if self.CS.brakeHold and not self.CC.usestockscc:
-      events.add(EventName.brakeHold)
+    #if self.CS.brakeHold and not self.CC.usestockscc:
+    #  events.add(EventName.brakeHold)
     if self.CS.parkBrake and not self.CC.usestockscc:
       events.add(EventName.parkBrake)
     if self.CS.brakeUnavailable and not self.CC.usestockscc:
