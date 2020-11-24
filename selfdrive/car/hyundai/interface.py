@@ -16,7 +16,7 @@ class CarInterface(CarInterfaceBase):
     self.cp2 = self.CS.get_can2_parser(CP)
     self.visiononlyWarning = False
     self.belowspeeddingtimer = 0.
-    self.cruise_gap = 3.0
+    self.cruise_gap = 3
 
   @staticmethod
   def compute_gb(accel, speed):
@@ -302,8 +302,9 @@ class CarInterface(CarInterfaceBase):
           events.add(EventName.pcmDisable)
         if b.type == ButtonType.gapAdjustCruise and b.pressed:
           self.cruise_gap -= 1
+          print('cruisegap={}'.format(self.cruise_gap))
           if self.cruise_gap < 1:
-            self.cruise_gap = 4.0
+            self.cruise_gap = 4
 
 
     ret.events = events.to_msg()

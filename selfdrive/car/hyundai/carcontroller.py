@@ -88,7 +88,7 @@ class CarController():
     self.usestockscc = True
     self.lead_visible = False
     self.lead_debounce = 0
-    self.gapsettingdance = 3.0
+    self.gapsettingdance = 3
     self.gapcount = 0
     self.current_veh_speed = 0
     self.lfainFingerprint = CP.lfaAvailable
