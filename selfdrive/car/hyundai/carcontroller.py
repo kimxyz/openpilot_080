@@ -98,7 +98,7 @@ class CarController():
     self.fca11supcnt = self.fca11inc = self.fca11alivecnt = self.fca11cnt13 = self.scc11cnt = self.scc12cnt = 0
     self.counter_init = False
     self.fca11maxcnt = 0xD
-    self.radarDisableActivated = False
+    self.radarDisableActivated = True
     self.radarDisableResetTimer = 0
     self.radarDisableOverlapTimer = 0
     self.sendaccmode = not CP.radarDisablePossible
@@ -347,7 +347,7 @@ class CarController():
         self.counter_init = False
         can_sends.append(create_scc7d0(b'\x02\x10\x90\x00\x00\x00\x00\x00'))  # this enables RADAR
         can_sends.append(create_scc7d0(b'\x03\x29\x03\x01\x00\x00\x00\x00'))
-    elif self.radarDisableActivated or True:
+    elif self.radarDisableActivated:
       can_sends.append(create_scc7d0(b'\x02\x10\x90\x00\x00\x00\x00\x00'))  # this enables RADAR
       can_sends.append(create_scc7d0(b'\x03\x29\x03\x01\x00\x00\x00\x00'))
       self.radarDisableOverlapTimer = 0
