@@ -287,7 +287,6 @@ class CarInterface(CarInterfaceBase):
 
     # handle button press
     if not self.CP.enableCruise:
-      self.cruise_gap_change_timer = 0
       for b in self.buttonEvents:
         if b.type == ButtonType.decelCruise and b.pressed \
                 and (not ret.brakePressed or ret.standstill):
