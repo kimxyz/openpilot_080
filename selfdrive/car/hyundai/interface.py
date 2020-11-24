@@ -16,9 +16,7 @@ class CarInterface(CarInterfaceBase):
     self.cp2 = self.CS.get_can2_parser(CP)
     self.visiononlyWarning = False
     self.belowspeeddingtimer = 0.
-    self.cruise_gap = 3
-    self.cruise_gap_change = 0
-    self.cruise_gap_change_timer = 0
+    self.cruisegap_timer = 0.
 
   @staticmethod
   def compute_gb(accel, speed):
@@ -170,6 +168,7 @@ class CarInterface(CarInterfaceBase):
     ret.lvrAvailable = True if 871 in fingerprint[0] else False
     ret.evgearAvailable = True if 882 in fingerprint[0] else False
     ret.emsAvailable = True if 608 and 809 in fingerprint[0] else False
+    ret.cruiseGapDist = 4
 
     if True:
       ret.sccBus = 2 if 1057 in fingerprint[2] and False else 0 if 1057 in fingerprint[0] else -1
@@ -237,10 +236,6 @@ class CarInterface(CarInterfaceBase):
     # speeds
     ret.steeringRateLimited = self.CC.steer_rate_limited if self.CC is not None else False
 
-    ret.cruiseGapSet = self.cruise_gap
-    print('cruisegap={}'.format(self.cruise_gap))
-
-
     # low speed steer alert hysteresis logic (only for cars with steer cut off above 10 m/s)
     if ret.vEgo > (self.CP.minSteerSpeed + .84) or not self.CC.enabled:
       self.low_speed_alert = False
@@ -288,7 +283,6 @@ class CarInterface(CarInterfaceBase):
     ret.buttonEvents = self.buttonEvents
 
     # handle button press
-    self.cruise_gap_change_timer = 0
     if not self.CP.enableCruise:
       for b in self.buttonEvents:
         if b.type == ButtonType.decelCruise and b.pressed \
@@ -305,25 +299,13 @@ class CarInterface(CarInterfaceBase):
         if b.type == ButtonType.altButton3 and b.pressed:
           events.add(EventName.buttonCancel)
           events.add(EventName.pcmDisable)
-        if b.type == ButtonType.gapAdjustCruise and b.pressed and self.cruise_gap_change_timer < 1:
-          if self.cruise_gap_change == 0:
-            self.cruise_gap_change = 1
-            self.cruise_gap -= 1
-            self.cruise_gap_change_timer += 1
-          elif self.cruise_gap_change == 1:
-            self.cruise_gap_change = 2
-            self.cruise_gap -= 1
-            self.cruise_gap_change_timer += 1
-          elif self.cruise_gap_change == 2:
-            self.cruise_gap_change = 3
-            self.cruise_gap -= 1
-            self.cruise_gap_change_timer += 1
-          elif self.cruise_gap_change == 3:
-            self.cruise_gap_change = 0
-            self.cruise_gap -= 1
-            self.cruise_gap_change_timer += 1
-          if self.cruise_gap < 1:
-            self.cruise_gap = 4
+        if b.type == ButtonType.gapAdjustCruise and b.pressed:
+          self.cruisegap_timer += 1
+          if self.cruisegap_timer > 6:
+            ret.cruiseGapDist -= 1
+            self.cruisegap_timer = 0
+            if ret.cruiseGapDist < 1:
+              ret.cruiseGapDist = 4
 
     ret.events = events.to_msg()
     self.CS.out = ret.as_reader()

@@ -199,7 +199,6 @@ struct CarState {
   tpmsPressureRr @40 :Float32;
 
   radarDistance @41 :Float32;
-  readdistancelines @42 :Float32;
   cruiseGapSet @43 :Float32;
 
   struct WheelSpeeds {
@@ -454,7 +453,7 @@ struct CarParams {
   lvrAvailable @58: Bool;
   evgearAvailable @59: Bool;
   emsAvailable @60: Bool;
-  cruiseGapSet @61: Float32;
+  cruiseGapDist @61: Float32;
 
   struct LateralParams {
     torqueBP @0 :List(Int32);
