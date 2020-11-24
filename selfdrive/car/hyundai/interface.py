@@ -54,7 +54,7 @@ class CarInterface(CarInterfaceBase):
     ret.longitudinalTuning.kpBP = [0., 1.38, 4.17, 8.33, 16.67, 22.22, 27.78] # 0km/h, 5km/h, 15km/h, 30km/h, 60km/h, 80km/h 100km/h
     ret.longitudinalTuning.kpV = [0.1, 1.4, 1.3, 1.2, 0.75, 0.7, 0.65]
     ret.longitudinalTuning.kiBP = [0., 1.38, 4.17, 8.33, 16.67, 22.22, 27.78] # 0km/h, 5km/h, 15km/h, 30km/h, 60km/h, 80km/h 100km/h
-    ret.longitudinalTuning.kiV = [1.5, 1.5, 2.0, 2.5, 3, 1.5, 1.0]
+    ret.longitudinalTuning.kiV = [1.5, 1.5, 2.0, 2.5, 3.0, 1.5, 1.0]
     ret.longitudinalTuning.deadzoneBP = [0.0, 0.5]
     ret.longitudinalTuning.deadzoneV = [0.00, 0.00]
     ret.gasMaxBP = [0., 1.38, 4.17, 8.33, 16.67, 22.22, 27.78] # 0km/h, 5km/h, 15km/h, 30km/h, 60km/h, 80km/h 100km/h
