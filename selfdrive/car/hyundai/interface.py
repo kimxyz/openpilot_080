@@ -17,6 +17,8 @@ class CarInterface(CarInterfaceBase):
     self.visiononlyWarning = False
     self.belowspeeddingtimer = 0.
     self.cruise_gap = 3
+    self.cruise_gap_change = 0
+    self.cruise_gap_change_timer = 0
 
   @staticmethod
   def compute_gb(accel, speed):
@@ -285,6 +287,7 @@ class CarInterface(CarInterfaceBase):
 
     # handle button press
     if not self.CP.enableCruise:
+      self.cruise_gap_change_timer = 0
       for b in self.buttonEvents:
         if b.type == ButtonType.decelCruise and b.pressed \
                 and (not ret.brakePressed or ret.standstill):
@@ -301,10 +304,23 @@ class CarInterface(CarInterfaceBase):
           events.add(EventName.buttonCancel)
           events.add(EventName.pcmDisable)
         if b.type == ButtonType.gapAdjustCruise and b.pressed:
-          self.cruise_gap -= 1
-          print('cruisegap={}'.format(self.cruise_gap))
+          if self.cruise_gap_change == 0 and self.cruise_gap_change_timer < 1:
+            self.cruise_gap_change = 1
+            self.cruise_gap -= 1
+          elif self.cruise_gap_change == 1 and self.cruise_gap_change_timer < 1:
+            self.cruise_gap_change = 2
+            self.cruise_gap -= 1
+          elif self.cruise_gap_change == 2 and self.cruise_gap_change_timer < 1:
+            self.cruise_gap_change = 3
+            self.cruise_gap -= 1
+          elif self.cruise_gap_change == 3 and self.cruise_gap_change_timer < 1:
+            self.cruise_gap_change = 0
+            self.cruise_gap -= 1
           if self.cruise_gap < 1:
             self.cruise_gap = 4
+          self.cruise_gap_change_timer += 1
+
+          print('cruisegap={}'.format(self.cruise_gap))
 
 
     ret.events = events.to_msg()
