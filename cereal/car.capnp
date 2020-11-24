@@ -454,6 +454,7 @@ struct CarParams {
   lvrAvailable @58: Bool;
   evgearAvailable @59: Bool;
   emsAvailable @60: Bool;
+  cruiseGapSet @61: Float32;
 
   struct LateralParams {
     torqueBP @0 :List(Int32);
