@@ -139,6 +139,8 @@ class CarController():
     elif CP.lateralTuning.which() == 'lqr':
       self.str_log2 = 'TUNE={:04.0f}/{:05.3f}/{:06.4f}'.format(CP.lateralTuning.lqr.scale, CP.lateralTuning.lqr.ki, CP.lateralTuning.lqr.dcGain)
 
+    self.p = SteerLimitParams
+
   def update(self, enabled, CS, frame, actuators, pcm_cancel_cmd, visual_alert,
              left_lane, right_lane, left_lane_depart, right_lane_depart,
              set_speed, lead_visible, lead_dist, lead_vrel, lead_yrel, sm):
