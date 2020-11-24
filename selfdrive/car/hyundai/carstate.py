@@ -4,6 +4,7 @@ from selfdrive.car.hyundai.values import DBC, STEER_THRESHOLD, FEATURES, ELEC_VE
 from selfdrive.car.interfaces import CarStateBase
 from opendbc.can.parser import CANParser
 from selfdrive.config import Conversions as CV
+from common.params import Params
 
 GearShifter = car.CarState.GearShifter
 
@@ -26,6 +27,8 @@ class CarState(CarStateBase):
     self.cancel_button_timer = 0
     self.leftblinkerflashdebounce = 0
     self.rightblinkerflashdebounce = 0
+
+    self.steer_anglecorrection = int(Params().get('OpkrSteerAngleCorrection')) * 0.1
 
   def update(self, cp, cp2, cp_cam):
     cp_mdps = cp2 if self.CP.mdpsHarness else cp
@@ -53,7 +56,7 @@ class CarState(CarStateBase):
 
     ret.standstill = ret.vEgoRaw < 0.1
 
-    ret.steeringAngle = cp_sas.vl["SAS11"]['SAS_Angle']
+    ret.steeringAngle = cp_sas.vl["SAS11"]['SAS_Angle'] - self.steer_anglecorrection
     ret.steeringRate = cp_sas.vl["SAS11"]['SAS_Speed']
     ret.yawRate = cp.vl["ESP12"]['YAW_RATE']
 
@@ -145,6 +148,27 @@ class CarState(CarStateBase):
     ret.espDisabled = (cp.vl["TCS15"]['ESC_Off_Step'] != 0)
 
     self.parkBrake = (cp.vl["CGW1"]['CF_Gway_ParkBrakeSw'] != 0)
+
+    #TPMS
+    if cp.vl["TPMS11"]['PRESSURE_FL'] > 43:
+      ret.tpmsPressureFl = cp.vl["TPMS11"]['PRESSURE_FL'] * 5 * 0.145
+    else:
+      ret.tpmsPressureFl = cp.vl["TPMS11"]['PRESSURE_FL']
+    if cp.vl["TPMS11"]['PRESSURE_FR'] > 43:
+      ret.tpmsPressureFr = cp.vl["TPMS11"]['PRESSURE_FR'] * 5 * 0.145
+    else:
+      ret.tpmsPressureFr = cp.vl["TPMS11"]['PRESSURE_FR']
+    if cp.vl["TPMS11"]['PRESSURE_RL'] > 43:
+      ret.tpmsPressureRl = cp.vl["TPMS11"]['PRESSURE_RL'] * 5 * 0.145
+    else:
+      ret.tpmsPressureRl = cp.vl["TPMS11"]['PRESSURE_RL']
+    if cp.vl["TPMS11"]['PRESSURE_RR'] > 43:
+      ret.tpmsPressureRr = cp.vl["TPMS11"]['PRESSURE_RR'] * 5 * 0.145
+    else:
+      ret.tpmsPressureRr = cp.vl["TPMS11"]['PRESSURE_RR']
+
+    self.cruiseGapSet = cp_scc.vl["SCC11"]['TauGapSet']
+
 
     # TODO: refactor gear parsing in function
     # Gear Selection via Cluster - For those Kia/Hyundai which are not fully discovered, we can use the Cluster Indicator for Gear Selection,
@@ -284,6 +308,11 @@ class CarState(CarStateBase):
       ("AliveCounterACC", "SCC11", 0),
       ("CR_FCA_Alive", "FCA11", 0),
       ("Supplemental_Counter", "FCA11", 0),
+
+      ("PRESSURE_FL", "TPMS11", 0),
+      ("PRESSURE_FR", "TPMS11", 0),
+      ("PRESSURE_RL", "TPMS11", 0),
+      ("PRESSURE_RR", "TPMS11", 0),
     ]
 
     checks = [

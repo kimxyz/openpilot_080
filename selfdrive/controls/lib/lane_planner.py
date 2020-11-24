@@ -1,8 +1,10 @@
 from common.numpy_fast import interp
 import numpy as np
 from cereal import log
+from common.params import Params
 
-CAMERA_OFFSET = 0.05  # m from center car to camera
+CAMERA_OFFSET = int(Params().get('CameraOffsetAdj')) * 0.001  # m from center car to camera
+CAMERA_OFFSET_A = (int(Params().get('CameraOffsetAdj')) * 0.001) - 0.1
 
 
 def compute_path_pinv(length=50):
@@ -62,13 +64,61 @@ class LanePlanner:
       self.l_lane_change_prob = md.meta.desireState[log.PathPlan.Desire.laneChangeLeft]
       self.r_lane_change_prob = md.meta.desireState[log.PathPlan.Desire.laneChangeRight]
 
-  def update_d_poly(self, v_ego):
-    # only offset left and right lane lines; offsetting p_poly does not make sense
-    self.l_poly[3] += CAMERA_OFFSET
-    self.r_poly[3] += CAMERA_OFFSET
+  def update_d_poly(self, v_ego, sm):
+    curvature = sm['controlsState'].curvature
+    mode_select = sm['carState'].cruiseState.modeSel
+    Curv = round(curvature, 4)
+    Poly_differ = round(abs(self.l_poly[3] + self.r_poly[3]), 2)
 
-    # Reduce reliance on lanelines that are too far apart or
-    # will be in a few seconds
+    if mode_select == 3 and v_ego > 8:
+      if curvature > 0.0008 and (self.l_poly[3] + self.r_poly[3]) <= 0.2: # left curve
+        if Poly_differ > 0.6:
+          Poly_differ = 0.6
+        if (self.l_poly[3] + self.r_poly[3]) <= 0:
+          lean_offset = -0.25 * Poly_differ #move the car to right at left curve
+      elif curvature < -0.0008 and (self.l_poly[3] + self.r_poly[3]) <= 0.2: # right curve
+        if Poly_differ > 0.6:
+          Poly_differ = 0.6
+        if (self.l_poly[3] + self.r_poly[3]) <= 0:
+          lean_offset = -0.25 * Poly_differ #move the car to right at left curve
+      else:
+        lean_offset = -0.03
+    # only offset left and right lane lines; offsetting p_poly does not make sense
+      self.l_poly[3] += CAMERA_OFFSET_A + lean_offset
+      self.r_poly[3] += CAMERA_OFFSET_A + lean_offset
+
+    elif (int(Params().get('LeftCurvOffsetAdj')) != 0 or int(Params().get('RightCurvOffsetAdj')) != 0) and v_ego > 8:
+      leftCurvOffsetAdj = int(Params().get('LeftCurvOffsetAdj'))
+      rightCurvOffsetAdj = int(Params().get('RightCurvOffsetAdj'))
+      if curvature > 0.0008 and leftCurvOffsetAdj < 0 and (self.l_poly[3] + self.r_poly[3]) >= 0: # left curve
+        if Poly_differ > 0.6:
+          Poly_differ = 0.6          
+        lean_offset = +(abs(leftCurvOffsetAdj) * Poly_differ * 0.05) # move to left
+      elif curvature > 0.0008 and leftCurvOffsetAdj > 0 and (self.l_poly[3] + self.r_poly[3]) <= 0:
+        if Poly_differ > 0.6:
+          Poly_differ = 0.6
+        lean_offset = -(abs(leftCurvOffsetAdj) * Poly_differ * 0.05) # move to right
+      elif curvature < -0.0008 and rightCurvOffsetAdj < 0 and (self.l_poly[3] + self.r_poly[3]) >= 0: # right curve
+        if Poly_differ > 0.6:
+          Poly_differ = 0.6    
+        lean_offset = +(abs(rightCurvOffsetAdj) * Poly_differ * 0.05) # move to left
+      elif curvature < -0.0008 and rightCurvOffsetAdj > 0 and (self.l_poly[3] + self.r_poly[3]) <= 0:
+        if Poly_differ > 0.6:
+          Poly_differ = 0.6    
+        lean_offset = -(abs(rightCurvOffsetAdj) * Poly_differ * 0.05) # move to right
+      else:
+        lean_offset = 0
+    # only offset left and right lane lines; offsetting p_poly does not make sense
+      self.l_poly[3] += CAMERA_OFFSET_A + lean_offset
+      self.r_poly[3] += CAMERA_OFFSET_A + lean_offset
+
+    else:
+      self.l_poly[3] += CAMERA_OFFSET
+      self.r_poly[3] += CAMERA_OFFSET
+
+    # Find current lanewidth
+    # This will improve behaviour when lanes suddenly widen
+    # these numbers were tested on 2000 segments and found to work well
     l_prob, r_prob = self.l_prob, self.r_prob
     width_poly = self.l_poly - self.r_poly
     prob_mods = []

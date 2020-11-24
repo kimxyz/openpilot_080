@@ -309,6 +309,9 @@ struct ThermalData {
   bat @29 :Float32;
   ambient @30 :Float32;
 
+  ipAddr @31 :Text;
+  cpu0 @32 :UInt16;
+
   enum ThermalStatus {
     green @0;   # all processes run
     yellow @1;  # critical processes run (kill uploader), engage still allowed
@@ -549,6 +552,9 @@ struct ControlsState @0x97ff69c53601abf1 {
   decelForModel @54 :Bool;
   canErrorCounter @57 :UInt32;
 
+  alertTextMsg1  @58 :Text;
+  alertTextMsg2  @59 :Text;
+  lateralControlMethod  @60 :UInt8;
   lateralControlState :union {
     indiState @52 :LateralINDIState;
     pidState @53 :LateralPIDState;
@@ -628,6 +634,7 @@ struct ModelData {
   frameAge @12 :UInt32;
   frameDropPerc @13 :Float32;
   timestampEof @9 :UInt64;
+  modelExecutionTime @14 :Float32;
 
   path @1 :PathData;
   leftLane @2 :PathData;
@@ -694,6 +701,7 @@ struct ModelDataV2 {
   frameAge @1 :UInt32;
   frameDropPerc @2 :Float32;
   timestampEof @3 :UInt64;
+  modelExecutionTime @15 :Float32;
 
   position @4 :XYZTData;
   orientation @5 :XYZTData;
@@ -756,6 +764,8 @@ struct EncodeIndex {
   segmentId @4 :UInt32;
   # index into camera file in segment in encode order
   segmentIdEncode @5 :UInt32;
+  timestampSof @6 :UInt64;
+  timestampEof @7 :UInt64;
 
   enum Type {
     bigBoxLossless @0;   # rcamera.mkv
@@ -829,6 +839,12 @@ struct Plan {
 
   processingDelay @29 :Float32;
 
+  dRel1 @32 :Float32;
+  yRel1 @33 :Float32;
+  vRel1 @34 :Float32;
+  dRel2 @35 :Float32;
+  yRel2 @36 :Float32;
+  vRel2 @37 :Float32;
 
   struct GpsTrajectory {
     x @0 :List(Float32);
@@ -867,6 +883,10 @@ struct PathPlan {
   desire @17 :Desire;
   laneChangeState @18 :LaneChangeState;
   laneChangeDirection @19 :LaneChangeDirection;
+  steerRatio @20 :Float32;
+  steerActuatorDelay @21 :Float32;
+  outputScale @22 :Float32;
+  steerRateCost @23 :Float32;
 
   enum Desire {
     none @0;
@@ -1945,6 +1965,8 @@ struct OrbKeyFrame {
 
 struct DriverState {
   frameId @0 :UInt32;
+  modelExecutionTime @14 :Float32;
+
   descriptorDEPRECATED @1 :List(Float32);
   stdDEPRECATED @2 :Float32;
   faceOrientation @3 :List(Float32);
@@ -2121,11 +2143,13 @@ struct Event {
     thumbnail @66: Thumbnail;
     carEvents @68: List(Car.CarEvent);
     carParams @69: Car.CarParams;
-    frontFrame @70: FrameData;
+    frontFrame @70: FrameData; # driver facing camera
     dMonitoringState @71: DMonitoringState;
     liveLocationKalman @72 :LiveLocationKalman;
     sentinel @73 :Sentinel;
     wideFrame @74: FrameData;
     modelV2 @75 :ModelDataV2;
+    frontEncodeIdx @76 :EncodeIndex; # driver facing camera
+    wideEncodeIdx @77 :EncodeIndex;
   }
 }

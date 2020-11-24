@@ -1,6 +1,7 @@
 from numpy import clip
-
-from cereal import car, messaging
+from common.realtime import DT_CTRL
+from cereal import car, log, messaging
+from common.numpy_fast import interp
 from selfdrive.car import apply_std_steer_torque_limits
 from selfdrive.car.hyundai.carstate import GearShifter
 from selfdrive.car.hyundai.hyundaican import create_lkas11, create_clu11, create_lfa_mfa, \
@@ -10,6 +11,12 @@ from selfdrive.car.hyundai.values import Buttons, SteerLimitParams, CAR, FEATURE
 from opendbc.can.packer import CANPacker
 from selfdrive.config import Conversions as CV
 from selfdrive.controls.lib.longcontrol import LongCtrlState
+
+from selfdrive.controls.lib.pathplanner import LANE_CHANGE_SPEED_MIN
+
+from common.params import Params
+import common.log as trace1
+import common.CTime1000 as tm
 
 VisualAlert = car.CarControl.HUDControl.VisualAlert
 
@@ -60,10 +67,10 @@ def process_hud_alert(enabled, fingerprint, visual_alert, left_lane,
   # initialize to no warnings
   left_lane_warning = 0
   right_lane_warning = 0
-  if left_lane_depart:
-    left_lane_warning = 1 if fingerprint in [CAR.HYUNDAI_GENESIS, CAR.GENESIS_G90, CAR.GENESIS_G80] else 2
-  if right_lane_depart:
-    right_lane_warning = 1 if fingerprint in [CAR.HYUNDAI_GENESIS, CAR.GENESIS_G90, CAR.GENESIS_G80] else 2
+  #if left_lane_depart:
+  #  left_lane_warning = 1 if fingerprint in [CAR.HYUNDAI_GENESIS, CAR.GENESIS_G90, CAR.GENESIS_G80] else 2
+  #if right_lane_depart:
+  #  right_lane_warning = 1 if fingerprint in [CAR.HYUNDAI_GENESIS, CAR.GENESIS_G90, CAR.GENESIS_G80] else 2
 
   return sys_warning, sys_state, left_lane_warning, right_lane_warning
 
@@ -78,7 +85,6 @@ class CarController():
     self.accel_lim_prev = 0.
     self.accel_lim = 0.
     self.steer_rate_limited = False
-    self.p = SteerLimitParams(CP)
     self.usestockscc = True
     self.lead_visible = False
     self.lead_debounce = 0
@@ -99,9 +105,43 @@ class CarController():
     self.enabled = False
     self.sm = messaging.SubMaster(['controlsState'])
 
+    self.lanechange_manual_timer = 0
+    self.emergency_manual_timer = 0
+    self.driver_steering_torque_above = False
+    self.driver_steering_torque_above_timer = 100
+    
+    self.params = Params()
+    self.mode_change_switch = int(self.params.get('CruiseStatemodeSelInit'))
+    self.opkr_variablecruise = int(self.params.get('OpkrVariableCruise'))
+    self.opkr_autoresume = int(self.params.get('OpkrAutoResume'))
+    self.opkr_autoresumeoption = int(self.params.get('OpkrAutoResumeOption'))
+
+    self.opkr_maxanglelimit = int(self.params.get('OpkrMaxAngleLimit'))
+
+    self.timer1 = tm.CTime1000("time")
+    
+    self.angle_differ_range = [0, 45]
+    self.steerMax_range = [int(self.params.get('SteerMaxBaseAdj')), SteerLimitParams.STEER_MAX]
+    self.steerDeltaUp_range = [int(self.params.get('SteerDeltaUpAdj')), 5]
+    self.steerDeltaDown_range = [int(self.params.get('SteerDeltaDownAdj')), 10]
+
+    self.steerMax = int(self.params.get('SteerMaxBaseAdj'))
+    self.steerDeltaUp = int(self.params.get('SteerDeltaUpAdj'))
+    self.steerDeltaDown = int(self.params.get('SteerDeltaDownAdj'))
+    self.steerMax_timer = 0
+    self.steerDeltaUp_timer = 0
+    self.steerDeltaDown_timer = 0
+
+    if CP.lateralTuning.which() == 'pid':
+      self.str_log2 = 'TUNE={:0.2f}/{:0.3f}/{:0.5f}'.format(CP.lateralTuning.pid.kpV[1], CP.lateralTuning.pid.kiV[1], CP.lateralTuning.pid.kf)
+    elif CP.lateralTuning.which() == 'indi':
+      self.str_log2 = 'TUNE={:03.1f}/{:03.1f}/{:03.1f}/{:03.1f}'.format(CP.lateralTuning.indi.innerLoopGain, CP.lateralTuning.indi.outerLoopGain, CP.lateralTuning.indi.timeConstant, CP.lateralTuning.indi.actuatorEffectiveness)
+    elif CP.lateralTuning.which() == 'lqr':
+      self.str_log2 = 'TUNE={:04.0f}/{:05.3f}/{:06.4f}'.format(CP.lateralTuning.lqr.scale, CP.lateralTuning.lqr.ki, CP.lateralTuning.lqr.dcGain)
+
   def update(self, enabled, CS, frame, actuators, pcm_cancel_cmd, visual_alert,
              left_lane, right_lane, left_lane_depart, right_lane_depart,
-             set_speed, lead_visible, lead_dist, lead_vrel, lead_yrel):
+             set_speed, lead_visible, lead_dist, lead_vrel, lead_yrel, sm):
 
     self.enabled = enabled
     # gas and brake
@@ -114,18 +154,82 @@ class CarController():
     self.accel_lim = apply_accel
     apply_accel = accel_rate_limit(self.accel_lim, self.accel_lim_prev)
 
+    param = self.p
+
+    path_plan = sm['pathPlan']
+    self.outScale = path_plan.outputScale
+
+    self.angle_steers_des = path_plan.angleSteers - path_plan.angleOffset
+    self.angle_steers = CS.out.steeringAngle
+    self.angle_diff = abs(self.angle_steers_des) - abs(self.angle_steers)
+
+    if abs(self.outScale) >= 0.9 and CS.out.vEgo > 8:
+      self.steerMax = interp(self.angle_diff, self.angle_differ_range, self.steerMax_range)
+      self.steerDeltaUp = interp(self.angle_diff, self.angle_differ_range, self.steerDeltaUp_range)
+      self.steerDeltaDown = interp(self.angle_diff, self.angle_differ_range, self.steerDeltaDown_range)
+    else:
+      self.steerMax_timer += 1
+      self.steerDeltaUp_timer += 1
+      self.steerDeltaDown_timer += 1
+      if self.steerMax_timer > 10:
+        self.steerMax -= 5
+        self.steerMax_timer = 0
+        if self.steerMax < int(self.params.get('SteerMaxBaseAdj')):
+          self.steerMax = int(self.params.get('SteerMaxBaseAdj'))
+      if self.steerDeltaUp_timer > 100:
+        self.steerDeltaUp -= 1
+        self.steerDeltaUp_timer = 0
+        if self.steerDeltaUp <= int(self.params.get('SteerDeltaUpAdj')):
+          self.steerDeltaUp = int(self.params.get('SteerDeltaUpAdj'))
+      if self.steerDeltaDown_timer > 50:
+        self.steerDeltaDown -= 1
+        self.steerDeltaDown_timer = 0
+        if self.steerDeltaDown <= int(self.params.get('SteerDeltaDownAdj')):
+          self.steerDeltaDown = int(self.params.get('SteerDeltaDownAdj'))
+
+    param.STEER_MAX = min(SteerLimitParams.STEER_MAX, self.steerMax)
+    param.STEER_DELTA_UP = max(int(self.params.get('SteerDeltaUpAdj')), self.steerDeltaUp)
+    param.STEER_DELTA_DOWN = max(int(self.params.get('SteerDeltaDownAdj')), self.steerDeltaDown)
+
     # Steering Torque
-    new_steer = actuators.steer * self.p.STEER_MAX
-    apply_steer = apply_std_steer_torque_limits(new_steer, self.apply_steer_last, CS.out.steeringTorque, self.p)
+    if 0 <= self.driver_steering_torque_above_timer < 100:
+      new_steer = actuators.steer * self.steerMax * (self.driver_steering_torque_above_timer / 100)
+    else:
+      new_steer = actuators.steer * self.steerMax
+    apply_steer = apply_std_steer_torque_limits(new_steer, self.apply_steer_last, CS.out.steeringTorque, param)
     self.steer_rate_limited = new_steer != apply_steer
 
     # disable if steer angle reach 90 deg, otherwise mdps fault in some models
     self.high_steer_allowed = True if self.car_fingerprint in FEATURES["allow_high_steer"] else False
-    lkas_active = enabled and ((abs(CS.out.steeringAngle) < 90.) or self.high_steer_allowed)
+    if self.opkr_maxanglelimit >= 90:
+      lkas_active = enabled and abs(CS.out.steeringAngle) < self.opkr_maxanglelimit
+    else:
+      lkas_active = enabled
 
-    # fix for Genesis hard fault at low speed
-    if CS.out.vEgo < 55 * CV.KPH_TO_MS and self.car_fingerprint == CAR.HYUNDAI_GENESIS and CS.CP.minSteerSpeed > 0.:
-      lkas_active = False
+    if (( CS.out.leftBlinker and not CS.out.rightBlinker) or ( CS.out.rightBlinker and not CS.out.leftBlinker)) and CS.out.vEgo < LANE_CHANGE_SPEED_MIN:
+      self.lanechange_manual_timer = 50
+    if CS.out.leftBlinker and CS.out.rightBlinker:
+      self.emergency_manual_timer = 50
+    if self.lanechange_manual_timer:
+      lkas_active = 0
+    if self.lanechange_manual_timer > 0:
+      self.lanechange_manual_timer -= 1
+    if self.emergency_manual_timer > 0:
+      self.emergency_manual_timer -= 1
+
+    if abs(CS.out.steeringTorque) > 200 and CS.out.vEgo < LANE_CHANGE_SPEED_MIN:
+      self.driver_steering_torque_above = True
+    else:
+      self.driver_steering_torque_above = False
+
+    if self.driver_steering_torque_above == True:
+      self.driver_steering_torque_above_timer -= 1
+      if self.driver_steering_torque_above_timer <= 0:
+        self.driver_steering_torque_above_timer = 0
+    elif self.driver_steering_torque_above == False:
+      self.driver_steering_torque_above_timer += 5
+      if self.driver_steering_torque_above_timer >= 100:
+        self.driver_steering_torque_above_timer = 100
 
     if not lkas_active:
       apply_steer = 0
@@ -186,13 +290,16 @@ class CarController():
 
       can_sends.append(create_clu11(self.packer, 1, CS.clu11, Buttons.NONE, enabled_speed, self.clu11_cnt))
 
+    str_log1 = '토크={:03.0f}  프레임률={:03.0f} ST={:03.0f}/{:01.0f}/{:01.0f}'.format(abs(new_steer), self.timer1.sampleTime(), self.steerMax, self.steerDeltaUp, self.steerDeltaDown)
+    trace1.printf1('{}'.format(str_log1))
+
     if pcm_cancel_cmd and CS.scc12["ACCMode"] != 0 and not CS.out.standstill:
       self.vdiff = 0.
       self.resumebuttoncnt = 0
       can_sends.append(create_clu11(self.packer, CS.CP.sccBus, CS.clu11, Buttons.CANCEL, self.current_veh_speed, self.clu11_cnt))
     elif CS.out.cruiseState.standstill and CS.scc12["ACCMode"] != 0 and CS.vrelative > 0:
       self.vdiff += (CS.vrelative - self.vdiff)
-      if (frame - self.lastresumeframe > 10) and (self.vdiff > .5 or CS.lead_distance > 6.):
+      if (frame - self.lastresumeframe > 5) and (self.vdiff > .3 or CS.lead_distance > 5.):
         can_sends.append(create_clu11(self.packer, CS.CP.sccBus, CS.clu11, Buttons.RES_ACCEL, self.current_veh_speed, self.resumebuttoncnt))
         self.resumebuttoncnt += 1
         if self.resumebuttoncnt > 5:

@@ -100,6 +100,7 @@ struct CarEvent @0x9b1657f34caf3ad3 {
     deviceFalling @90;
     fanMalfunction @91;
     cameraMalfunction @92;
+    modelLagWarning @93;
 
     gasUnavailableDEPRECATED @3;
     dataNeededDEPRECATED @16;
@@ -110,12 +111,20 @@ struct CarEvent @0x9b1657f34caf3ad3 {
     driverMonitorOffDEPRECATED @42;
     calibrationProgressDEPRECATED @47;
     invalidGiraffeHondaDEPRECATED @49;
-    invalidGiraffeToyota @60;
-    whitePandaUnsupported @81;
-    startupGreyPanda @82;
+    invalidGiraffeToyotaDEPRECATED @60;
+    whitePandaUnsupportedDEPRECATED @81;
+    startupGreyPandaDEPRECATED @82;
     canErrorPersistentDEPRECATED @83;
     focusRecoverActiveDEPRECATED @86;
     neosUpdateRequiredDEPRECATED @88;
+    laneChangeManual @94;
+    emgButtonManual @95;
+    driverSteering @96;
+    modeChangeOpenpilot @97;
+    modeChangeDistcurv @98;
+    modeChangeDistance @99;
+    modeChangeOneway @100;
+    needBrake @101;
   }
 }
 
@@ -183,6 +192,14 @@ struct CarState {
   leftBlindspot @33 :Bool; # Is there something blocking the left lane change
   rightBlindspot @34 :Bool; # Is there something blocking the right lane change
 
+  # tpms 
+  tpmsPressureFl @37 :Float32;
+  tpmsPressureFr @38 :Float32;
+  tpmsPressureRl @39 :Float32;
+  tpmsPressureRr @40 :Float32;
+
+  radarDistance @41 :Float32;
+
   struct WheelSpeeds {
     # optional wheel speeds
     fl @0 :Float32;
@@ -198,6 +215,7 @@ struct CarState {
     speedOffset @3 :Float32;
     standstill @4 :Bool;
     nonAdaptive @5 :Bool;
+    modeSel @6 :Int16;
   }
 
   enum GearShifter {
@@ -341,6 +359,18 @@ struct CarControl {
       chimeWarningRepeat @6;
       chimePrompt @7;
       chimeWarning2Repeat @8;
+      chimeReady @9;
+      chimeDoorOpen @10;
+      chimeGearDrive @11;
+      chimeLaneChange @12;
+      chimeLaneDeparture @13;
+      chimeRoadWarning @14;
+      chimeSeatBelt @15;
+      chimeViewUncertain @16;
+      chimeModeOpenpilot @17;
+      chimeModeDistcurv @18;
+      chimeModeDistance @19;
+      chimeModeOneway @20;
     }
   }
 }
