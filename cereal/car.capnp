@@ -200,6 +200,8 @@ struct CarState {
 
   radarDistance @41 :Float32;
 
+  readdistancelines @42 :Float32;
+
   struct WheelSpeeds {
     # optional wheel speeds
     fl @0 :Float32;

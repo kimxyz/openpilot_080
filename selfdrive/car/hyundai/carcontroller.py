@@ -88,7 +88,7 @@ class CarController():
     self.usestockscc = True
     self.lead_visible = False
     self.lead_debounce = 0
-    self.gapsettingdance = 4
+    self.gapsettingdance = 3.0
     self.gapcount = 0
     self.current_veh_speed = 0
     self.lfainFingerprint = CP.lfaAvailable
@@ -255,6 +255,8 @@ class CarController():
     #  elif self.gapcount == 50 and self.gapsettingdance == 3:
     #    self.gapsettingdance = 2
     #    self.gapcount = 0
+
+    self.gapsettingdance = CS.CP.cruiseGapSet
 
     self.apply_steer_last = apply_steer
 

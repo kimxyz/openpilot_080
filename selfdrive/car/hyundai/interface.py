@@ -16,6 +16,7 @@ class CarInterface(CarInterfaceBase):
     self.cp2 = self.CS.get_can2_parser(CP)
     self.visiononlyWarning = False
     self.belowspeeddingtimer = 0.
+    self.cruise_gap = 3.0
 
   @staticmethod
   def compute_gb(accel, speed):
@@ -234,6 +235,7 @@ class CarInterface(CarInterfaceBase):
     # speeds
     ret.steeringRateLimited = self.CC.steer_rate_limited if self.CC is not None else False
 
+    ret.cruiseGapSet = self.cruise_gap
 
     # low speed steer alert hysteresis logic (only for cars with steer cut off above 10 m/s)
     if ret.vEgo > (self.CP.minSteerSpeed + .84) or not self.CC.enabled:
@@ -298,6 +300,11 @@ class CarInterface(CarInterfaceBase):
         if b.type == ButtonType.altButton3 and b.pressed:
           events.add(EventName.buttonCancel)
           events.add(EventName.pcmDisable)
+        if b.type == ButtonType.gapAdjustCruise and b.pressed:
+          self.cruise_gap -= 1
+          if self.cruise_gap < 1:
+            self.cruise_gap = 4.0
+
 
     ret.events = events.to_msg()
     self.CS.out = ret.as_reader()

@@ -60,6 +60,8 @@ class CarState(CarStateBase):
     ret.steeringRate = cp_sas.vl["SAS11"]['SAS_Speed']
     ret.yawRate = cp.vl["ESP12"]['YAW_RATE']
 
+    ret.readdistancelines = self.CP.cruiseGapSet
+
     self.leftblinkerflash = cp.vl["CGW1"]['CF_Gway_TurnSigLh'] != 0 and cp.vl["CGW1"]['CF_Gway_TSigLHSw'] == 0
     self.rightblinkerflash = cp.vl["CGW1"]['CF_Gway_TurnSigRh'] != 0 and cp.vl["CGW1"]['CF_Gway_TSigRHSw'] == 0
 
@@ -166,9 +168,6 @@ class CarState(CarStateBase):
       ret.tpmsPressureRr = cp.vl["TPMS11"]['PRESSURE_RR'] * 5 * 0.145
     else:
       ret.tpmsPressureRr = cp.vl["TPMS11"]['PRESSURE_RR']
-
-    self.cruiseGapSet = cp_scc.vl["SCC11"]['TauGapSet']
-
 
     # TODO: refactor gear parsing in function
     # Gear Selection via Cluster - For those Kia/Hyundai which are not fully discovered, we can use the Cluster Indicator for Gear Selection,
