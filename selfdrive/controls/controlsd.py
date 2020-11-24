@@ -211,7 +211,7 @@ class Controls:
         else:
           self.events.add(EventName.preLaneChangeRight)
     elif self.sm['pathPlan'].laneChangeState in [LaneChangeState.laneChangeStarting,
-                                                 LaneChangeState.laneChangeFinishing, LaneChangeState.laneChangeDone]:
+                                                 LaneChangeState.laneChangeFinishing]:
       self.events.add(EventName.laneChange)
 
     if self.can_rcv_error or (not CS.canValid and self.sm.frame > 5 / DT_CTRL):
