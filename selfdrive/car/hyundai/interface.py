@@ -288,6 +288,7 @@ class CarInterface(CarInterfaceBase):
     ret.buttonEvents = self.buttonEvents
 
     # handle button press
+    self.cruise_gap_change_timer = 0
     if not self.CP.enableCruise:
       for b in self.buttonEvents:
         if b.type == ButtonType.decelCruise and b.pressed \
@@ -323,8 +324,6 @@ class CarInterface(CarInterfaceBase):
             self.cruise_gap_change_timer += 1
           if self.cruise_gap < 1:
             self.cruise_gap = 4
-      for b in not self.buttonEvents:
-        self.cruise_gap_change_timer = 0
 
     ret.events = events.to_msg()
     self.CS.out = ret.as_reader()
