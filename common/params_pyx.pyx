@@ -104,6 +104,7 @@ keys = {
   b"SteerLimitTimerAdj": [TxType.PERSISTENT],
   b"TireStiffnessFactorAdj": [TxType.PERSISTENT],
   b"SteerMaxAdj": [TxType.PERSISTENT],
+  b"SteerMaxBaseAdj": [TxType.PERSISTENT],
   b"SteerDeltaUpAdj": [TxType.PERSISTENT],
   b"SteerDeltaDownAdj": [TxType.PERSISTENT],
   b"SteerMaxvAdj": [TxType.PERSISTENT],

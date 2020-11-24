@@ -608,6 +608,7 @@ def main():
     ("SteerLimitTimerAdj", "80"),
     ("TireStiffnessFactorAdj", "75"),
     ("SteerMaxAdj", "380"),
+    ("SteerMaxBaseAdj", "255"),
     ("SteerDeltaUpAdj", "3"),
     ("SteerDeltaDownAdj", "7"),
     ("SteerMaxvAdj", "10"),

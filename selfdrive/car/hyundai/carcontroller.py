@@ -133,7 +133,7 @@ class CarController():
     self.scc_live = not CP.radarOffCan
 
     self.angle_differ_range = [0, 45]
-    self.steerMax_range = [255, SteerLimitParams.STEER_MAX]
+    self.steerMax_range = [int(self.params.get('SteerMaxBaseAdj')), SteerLimitParams.STEER_MAX]
     self.steerDeltaUp_range = [int(self.params.get('SteerDeltaUpAdj')), 5]
     self.steerDeltaDown_range = [int(self.params.get('SteerDeltaDownAdj')), 10]
 
@@ -218,8 +218,8 @@ class CarController():
       if self.steerMax_timer > 10:
         self.steerMax -= 5
         self.steerMax_timer = 0
-        if self.steerMax < 255:
-          self.steerMax = 255
+        if self.steerMax < int(self.params.get('SteerMaxBaseAdj')):
+          self.steerMax = int(self.params.get('SteerMaxBaseAdj'))
       if self.steerDeltaUp_timer > 100:
         self.steerDeltaUp -= 1
         self.steerDeltaUp_timer = 0
