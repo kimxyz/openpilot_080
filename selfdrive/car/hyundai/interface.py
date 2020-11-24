@@ -305,20 +305,20 @@ class CarInterface(CarInterfaceBase):
         if b.type == ButtonType.altButton3 and b.pressed:
           events.add(EventName.buttonCancel)
           events.add(EventName.pcmDisable)
-        if b.type == ButtonType.gapAdjustCruise and b.pressed:
-          if self.cruise_gap_change == 0 and self.cruise_gap_change_timer < 1:
+        if b.type == ButtonType.gapAdjustCruise and b.pressed and self.cruise_gap_change_timer < 1:
+          if self.cruise_gap_change == 0:
             self.cruise_gap_change = 1
             self.cruise_gap -= 1
             self.cruise_gap_change_timer += 1
-          elif self.cruise_gap_change == 1 and self.cruise_gap_change_timer < 1:
+          elif self.cruise_gap_change == 1:
             self.cruise_gap_change = 2
             self.cruise_gap -= 1
             self.cruise_gap_change_timer += 1
-          elif self.cruise_gap_change == 2 and self.cruise_gap_change_timer < 1:
+          elif self.cruise_gap_change == 2:
             self.cruise_gap_change = 3
             self.cruise_gap -= 1
             self.cruise_gap_change_timer += 1
-          elif self.cruise_gap_change == 3 and self.cruise_gap_change_timer < 1:
+          elif self.cruise_gap_change == 3:
             self.cruise_gap_change = 0
             self.cruise_gap -= 1
             self.cruise_gap_change_timer += 1
