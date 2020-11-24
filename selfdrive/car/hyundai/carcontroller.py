@@ -256,7 +256,7 @@ class CarController():
     #    self.gapsettingdance = 2
     #    self.gapcount = 0
 
-    self.gapsettingdance = CS.CP.cruiseGapSet
+    self.gapsettingdance = CS.readdistancelines
     print('gapsetting={}'.format(self.gapsettingdance))
 
     self.apply_steer_last = apply_steer
