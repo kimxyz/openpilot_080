@@ -50,11 +50,11 @@ class CarInterface(CarInterfaceBase):
     ret.steerLimitTimer = int(params.get('SteerLimitTimerAdj')) * 0.01
     ret.steerRatio = int(params.get('SteerRatioAdj')) * 0.1
 
-    #Long tuning Params -  make individual params for cars, baseline Hyundai genesis
+    #오파 차간거리 조절 파라미터, 현재 브레이킹이 원활하지 않습니다. 사용에 주의를 요합니다. 고오급개발자의 손이 필요할듯 하네요^^
     ret.longitudinalTuning.kpBP = [0., 1.38, 4.17, 8.33, 16.67, 22.22, 27.78] # 0km/h, 5km/h, 15km/h, 30km/h, 60km/h, 80km/h 100km/h
-    ret.longitudinalTuning.kpV = [0.1, 1.3, 1.1, 1.0, 0.75, 0.7, 0.65]
+    ret.longitudinalTuning.kpV = [0.1, 1.4, 1.3, 1.2, 0.75, 0.7, 0.65]
     ret.longitudinalTuning.kiBP = [0., 1.38, 4.17, 8.33, 16.67, 22.22, 27.78] # 0km/h, 5km/h, 15km/h, 30km/h, 60km/h, 80km/h 100km/h
-    ret.longitudinalTuning.kiV = [0.5, 0.6, 0.8, 1.0, 0.8, 0.5, 0.5]
+    ret.longitudinalTuning.kiV = [0.5, 0.7, 0.9, 1.2, 0.8, 0.5, 0.5]
     ret.longitudinalTuning.deadzoneBP = [0.0, 0.5]
     ret.longitudinalTuning.deadzoneV = [0.00, 0.00]
     ret.gasMaxBP = [0., 1.38, 4.17, 8.33, 16.67, 22.22, 27.78] # 0km/h, 5km/h, 15km/h, 30km/h, 60km/h, 80km/h 100km/h
