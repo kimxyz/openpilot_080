@@ -98,7 +98,7 @@ class CarController():
     self.fca11supcnt = self.fca11inc = self.fca11alivecnt = self.fca11cnt13 = self.scc11cnt = self.scc12cnt = 0
     self.counter_init = False
     self.fca11maxcnt = 0xD
-    self.radarDisableActivated = True
+    self.radarDisableActivated = False
     self.radarDisableResetTimer = 0
     self.radarDisableOverlapTimer = 0
     self.sendaccmode = not CP.radarDisablePossible
@@ -331,7 +331,7 @@ class CarController():
     if enabled:
       self.sendaccmode = enabled
 
-    if CS.CP.radarDisablePossible and False:
+    if CS.CP.radarDisablePossible:
       self.radarDisableOverlapTimer += 1
       self.radarDisableResetTimer = 0
       if self.radarDisableOverlapTimer >= 30:
