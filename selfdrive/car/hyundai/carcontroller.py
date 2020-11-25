@@ -257,8 +257,8 @@ class CarController():
     #    self.gapcount = 0
 
     if self.prev_gapButton != CS.cruise_buttons:  # gap change.
-      if CS.cruise_buttons == Buttons.GAP_DIST:
-        self.gapsettingdance -= 1
+      if CS.cruise_buttons == 4:
+        self.gapsettingdance = 3
       if self.gapsettingdance < 1:
         self.gapsettingdance = 4
       self.prev_gapButton = CS.cruise_buttons
