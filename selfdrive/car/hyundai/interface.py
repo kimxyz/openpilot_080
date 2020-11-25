@@ -301,7 +301,7 @@ class CarInterface(CarInterfaceBase):
           events.add(EventName.pcmDisable)
         if b.type == ButtonType.gapAdjustCruise and b.pressed:
           self.gap_timer += 1
-          if self.gap_timer > 5:
+          if self.gap_timer > 50:
             self.gap_timer = 0
             ret.cruiseGapDist -= 1
             if ret.cruiseGapDist < 1:

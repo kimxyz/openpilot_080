@@ -261,7 +261,7 @@ class CarController():
       if self.gapsettingdance < 1:
         self.gapsettingdance = 4
 
-    print('gapsetting={}'.format(self.gapsettingdance))
+    print('gapsetting={}'.format(CS.CP.cruiseGapDist))
 
     self.apply_steer_last = apply_steer
 
