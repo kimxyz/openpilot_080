@@ -11,6 +11,7 @@ from selfdrive.car.hyundai.values import Buttons, SteerLimitParams, CAR, FEATURE
 from opendbc.can.packer import CANPacker
 from selfdrive.config import Conversions as CV
 from selfdrive.controls.lib.longcontrol import LongCtrlState
+from selfdrive.controls.lib.events import Events
 
 from selfdrive.controls.lib.pathplanner import LANE_CHANGE_SPEED_MIN
 
@@ -19,6 +20,7 @@ import common.log as trace1
 import common.CTime1000 as tm
 
 VisualAlert = car.CarControl.HUDControl.VisualAlert
+EventName = car.CarEvent.EventName
 
 # Accel Hard limits
 ACCEL_HYST_GAP = 0.1  # don't change accel command for small oscillations within this value
@@ -256,12 +258,13 @@ class CarController():
     #    self.gapsettingdance = 2
     #    self.gapcount = 0
 
-    #if CS.CP.cruiseGapDist != self.gapsettingdance:
-    #  self.gapsettingdance -= 1
-    #  if self.gapsettingdance < 1:
-    #    self.gapsettingdance = 4
-
-    #print('gapsetting={}'.format(CS.CP.cruiseGapDist))
+    if (EventName.gapChange in Events().names) and self.gapcount == 0:
+      self.gapcount = 1
+      self.gapsettingdance -= 1
+      if self.gapsettingdance < 1:
+        self.gapsettingdance = 4
+    else:
+      self.gapcount = 0
 
     self.apply_steer_last = apply_steer
 
