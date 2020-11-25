@@ -256,10 +256,10 @@ class CarController():
     #    self.gapsettingdance = 2
     #    self.gapcount = 0
 
-    if CS.CP.cruiseGapDist == 5:
-      self.gapsettingdance -= 1
-      if self.gapsettingdance < 1:
-        self.gapsettingdance = 4
+    #if CS.CP.cruiseGapDist == 5:
+    #  self.gapsettingdance -= 1
+    #  if self.gapsettingdance < 1:
+    #    self.gapsettingdance = 4
 
     print('gapsetting={}'.format(self.gapsettingdance))
 
