@@ -4,14 +4,14 @@ from selfdrive.controls.lib.pid import LongPIDController
 
 LongCtrlState = log.ControlsState.LongControlState
 
-STOPPING_EGO_SPEED = 0.5
+STOPPING_EGO_SPEED = 0.3
 MIN_CAN_SPEED = 0.3  # TODO: parametrize this in car interface
 STOPPING_TARGET_SPEED = MIN_CAN_SPEED + 0.01
-STARTING_TARGET_SPEED = 0.5
-BRAKE_THRESHOLD_TO_PID = 0.2
+STARTING_TARGET_SPEED = 0.1
+BRAKE_THRESHOLD_TO_PID = 0.5
 
 STOPPING_BRAKE_RATE = 0.2  # brake_travel/s while trying to stop
-STARTING_BRAKE_RATE = 0.8  # brake_travel/s while releasing on restart
+STARTING_BRAKE_RATE = 2.  # brake_travel/s while releasing on restart
 BRAKE_STOPPING_TARGET = 0.5  # apply at least this amount of brake to maintain the vehicle stationary
 
 RATE = 100.0
@@ -56,7 +56,7 @@ class LongControl():
   def __init__(self, CP, compute_gb):
     self.long_control_state = LongCtrlState.off  # initialized to off
     kdBP = [0., 16., 35.]
-    kdV = [0.05, 1.0285 * 1.45, 1.8975 * 0.8]
+    kdV = [0.08, 0.215, 0.51]
     self.pid = LongPIDController((CP.longitudinalTuning.kpBP, CP.longitudinalTuning.kpV),
                                  (CP.longitudinalTuning.kiBP, CP.longitudinalTuning.kiV),
                                  (kdBP, kdV),
@@ -71,7 +71,7 @@ class LongControl():
     self.pid.reset()
     self.v_pid = v_pid
 
-  def update(self, active, CS, v_target, v_target_future, a_target, CP):
+  def update(self, active, CS, v_target, v_target_future, a_target, CP, hasLead, radarState):
     """Update longitudinal control. This updates the state machine and runs a PID loop"""
     # Actuation limits
     gas_max = interp(CS.vEgo, CP.gasMaxBP, CP.gasMaxV)
@@ -82,6 +82,10 @@ class LongControl():
     self.long_control_state = long_control_state_trans(active, self.long_control_state, CS.vEgo,
                                                        v_target_future, self.v_pid, output_gb,
                                                        CS.brakePressed, CS.cruiseState.standstill)
+    if radarState is None:
+      dRel = 150
+    else:
+      dRel = radarState.leadOne.dRel
 
     v_ego_pid = max(CS.vEgo, MIN_CAN_SPEED)  # Without this we get jumps, CAN bus reports 0 when speed < 0.3
 
@@ -108,16 +112,23 @@ class LongControl():
     # Intention is to stop, switch to a different brake control until we stop
     elif self.long_control_state == LongCtrlState.stopping:
       # Keep applying brakes until the car is stopped
-      if not CS.standstill or output_gb > -BRAKE_STOPPING_TARGET:
-        output_gb -= STOPPING_BRAKE_RATE / RATE
+      factor = 1.
+      if hasLead:
+        factor = interp(dRel, [2., 3., 4., 5., 6., 7., 8.], [3., 1.8, .8, .4, .25, .05, .005])
+      if output_gb > -BRAKE_STOPPING_TARGET:
+        output_gb -= (STOPPING_BRAKE_RATE * factor) / RATE
       output_gb = clip(output_gb, -brake_max, gas_max)
 
       self.reset(CS.vEgo)
 
     # Intention is to move again, release brake fast before handing control to PID
     elif self.long_control_state == LongCtrlState.starting:
-      if output_gb < -0.2:
-        output_gb += STARTING_BRAKE_RATE / RATE
+      factor = 1.
+      if hasLead:
+        factor = interp(dRel, [0., 2., 4., 6.], [2., 2., 2., 3.])
+      if output_gb < 2.:
+        output_gb += (STARTING_BRAKE_RATE * factor) / RATE
+
       self.reset(CS.vEgo)
 
     self.last_output_gb = output_gb

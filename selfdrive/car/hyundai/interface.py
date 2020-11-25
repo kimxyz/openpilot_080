@@ -52,15 +52,15 @@ class CarInterface(CarInterfaceBase):
 
     #오파 차간거리 조절 파라미터, 현재 브레이킹이 원활하지 않습니다. 사용에 주의를 요합니다. 고오급개발자의 손이 필요할듯 하네요^^
     ret.longitudinalTuning.kpBP = [0., 1.38, 4.17, 8.33, 16.67, 22.22, 27.78] # 0km/h, 5km/h, 15km/h, 30km/h, 60km/h, 80km/h 100km/h
-    ret.longitudinalTuning.kpV = [0.1, 1.4, 1.3, 1.2, 0.75, 0.7, 0.65]
+    ret.longitudinalTuning.kpV = [0.1, 1.3, 1.2, 1.1, 0.65, 0.6, 0.55]
     ret.longitudinalTuning.kiBP = [0., 1.38, 4.17, 8.33, 16.67, 22.22, 27.78] # 0km/h, 5km/h, 15km/h, 30km/h, 60km/h, 80km/h 100km/h
-    ret.longitudinalTuning.kiV = [1.5, 1.5, 1.7, 2.0, 1.5, 1.0, 1.0]
+    ret.longitudinalTuning.kiV = [1.2, 1.3, 1.5, 1.7, 1.3, 0.7, 0.7]
     ret.longitudinalTuning.deadzoneBP = [0.0, 0.5]
     ret.longitudinalTuning.deadzoneV = [0.00, 0.00]
     ret.gasMaxBP = [0., 1.38, 4.17, 8.33, 16.67, 22.22, 27.78] # 0km/h, 5km/h, 15km/h, 30km/h, 60km/h, 80km/h 100km/h
     ret.gasMaxV = [2.0, 2.1, 2.2, 2.3, 1.6, 1.5, 1.4]
     ret.brakeMaxBP = [0., 1.38, 4.17, 8.33, 16.67, 22.22, 27.78] # 0km/h, 5km/h, 15km/h, 30km/h, 60km/h, 80km/h 100km/h
-    ret.brakeMaxV = [3.5, 4, 4.5, 5.5, 5, 4, 4]  # safety limits to stop unintended deceleration
+    ret.brakeMaxV = [3.5, 3.5, 3.5, 3.5, 3.5, 3.5, 3.5]  # safety limits to stop unintended deceleration
     ret.steerMaxV = [LqrSteerMaxV]
     ret.steerMaxBP = [0.]
 
