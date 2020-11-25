@@ -125,7 +125,6 @@ struct CarEvent @0x9b1657f34caf3ad3 {
     modeChangeDistance @99;
     modeChangeOneway @100;
     needBrake @101;
-    gapChange @102;
   }
 }
 
@@ -200,7 +199,6 @@ struct CarState {
   tpmsPressureRr @40 :Float32;
 
   radarDistance @41 :Float32;
-  cruiseGapDist @42 :Float32;
 
   struct WheelSpeeds {
     # optional wheel speeds
@@ -454,7 +452,6 @@ struct CarParams {
   lvrAvailable @58: Bool;
   evgearAvailable @59: Bool;
   emsAvailable @60: Bool;
-  cruiseGapDist @61: Float32;
 
   struct LateralParams {
     torqueBP @0 :List(Int32);

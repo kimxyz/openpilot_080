@@ -16,7 +16,6 @@ class CarInterface(CarInterfaceBase):
     self.cp2 = self.CS.get_can2_parser(CP)
     self.visiononlyWarning = False
     self.belowspeeddingtimer = 0.
-    self.gap_timer = 0
 
   @staticmethod
   def compute_gb(accel, speed):
