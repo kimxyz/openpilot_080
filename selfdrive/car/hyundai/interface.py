@@ -58,9 +58,9 @@ class CarInterface(CarInterfaceBase):
     ret.longitudinalTuning.deadzoneBP = [0.0, 0.5]
     ret.longitudinalTuning.deadzoneV = [0.00, 0.00]
     ret.gasMaxBP = [0., 1.38, 4.17, 8.33, 16.67, 22.22, 27.78] # 0km/h, 5km/h, 15km/h, 30km/h, 60km/h, 80km/h 100km/h
-    ret.gasMaxV = [2.0, 2.1, 2.2, 2.3, 1.6, 1.5, 1.4]
+    ret.gasMaxV = [2.1, 2.1, 2.3, 2.4, 1.7, 1.6, 1.5]
     ret.brakeMaxBP = [0., 1.38, 4.17, 8.33, 16.67, 22.22, 27.78] # 0km/h, 5km/h, 15km/h, 30km/h, 60km/h, 80km/h 100km/h
-    ret.brakeMaxV = [3.5, 4, 4.5, 5.5, 5, 4, 4]  # safety limits to stop unintended deceleration
+    ret.brakeMaxV = [3.5, 3.5, 4.5, 5.5, 5, 4, 4]  # safety limits to stop unintended deceleration
     ret.steerMaxV = [LqrSteerMaxV]
     ret.steerMaxBP = [0.]
 
