@@ -301,12 +301,12 @@ class CarInterface(CarInterfaceBase):
           events.add(EventName.pcmDisable)
         if b.type == ButtonType.gapAdjustCruise and b.pressed:
           self.gap_timer += 1
-          if self.gap_timer > 50:
+          if self.gap_timer > 100:
             self.gap_timer = 0
-            ret.cruiseGapDist -= 1
-            if ret.cruiseGapDist < 1:
-              ret.cruiseGapDist = 4
-          print('gapsettinginter={}'.format(ret.cruiseGapDist))
+            ret.cruiseGapDist += 1
+            #if ret.cruiseGapDist < 1:
+            #  ret.cruiseGapDist = 4
+          print('gapsettinginter={}  timer={}'.format(ret.cruiseGapDist, self.gap_timer))
 
     ret.events = events.to_msg()
     self.CS.out = ret.as_reader()
