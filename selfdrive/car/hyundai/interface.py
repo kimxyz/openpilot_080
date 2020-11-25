@@ -160,7 +160,7 @@ class CarInterface(CarInterfaceBase):
 
     # these cars require a special panda safety mode due to missing counters and checksums in the messages
 
-    ret.mdpsHarness = True
+    ret.mdpsHarness = params.get('CommunityFeaturesToggle') == b'0'
     ret.sasBus = 0 if (688 in fingerprint[0] or not ret.mdpsHarness) else 1
     ret.fcaBus = 0 if 909 in fingerprint[0] else 2 if 909 in fingerprint[2] else -1
     ret.bsmAvailable = True if 1419 in fingerprint[0] else False
@@ -168,7 +168,6 @@ class CarInterface(CarInterfaceBase):
     ret.lvrAvailable = True if 871 in fingerprint[0] else False
     ret.evgearAvailable = True if 882 in fingerprint[0] else False
     ret.emsAvailable = True if 608 and 809 in fingerprint[0] else False
-    ret.cruiseGapDist = 4
 
     if True:
       ret.sccBus = 2 if 1057 in fingerprint[2] and False else 0 if 1057 in fingerprint[0] else -1
@@ -180,16 +179,10 @@ class CarInterface(CarInterfaceBase):
 
     ret.openpilotLongitudinalControl = True and not (ret.sccBus == 0)
 
-    if candidate in [ CAR.HYUNDAI_GENESIS, CAR.IONIQ_EV_LTD, CAR.IONIQ_HEV, CAR.KONA_EV, CAR.KIA_NIRO_EV, CAR.KIA_SORENTO, CAR.SONATA_2019,
-                      CAR.KIA_OPTIMA, CAR.VELOSTER, CAR.KIA_STINGER, CAR.GENESIS_G70, CAR.SONATA_HEV, CAR.SANTA_FE, CAR.GENESIS_G80,
-                      CAR.GENESIS_G90]:
-      ret.safetyModel = car.CarParams.SafetyModel.hyundaiLegacy
+    ret.safetyModel = car.CarParams.SafetyModel.hyundaiLegacy
 
-    if ret.mdpsHarness or \
-            (candidate in [CAR.KIA_OPTIMA_HEV, CAR.SONATA_HEV, CAR.IONIQ_HEV, CAR.SONATA_HEV_2019,
-                          CAR.KIA_CADENZA_HEV, CAR.GRANDEUR_HEV, CAR.KIA_NIRO_HEV, CAR.KONA_HEV]):
+    if ret.mdpsHarness:
       ret.safetyModel = car.CarParams.SafetyModel.hyundaiCommunity
-
     if ret.radarOffCan or (ret.sccBus == 2) or True:
       ret.safetyModel = car.CarParams.SafetyModel.hyundaiCommunityNonscc
     if ret.mdpsHarness:
