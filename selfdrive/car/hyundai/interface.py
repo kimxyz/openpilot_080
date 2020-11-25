@@ -16,7 +16,6 @@ class CarInterface(CarInterfaceBase):
     self.cp2 = self.CS.get_can2_parser(CP)
     self.visiononlyWarning = False
     self.belowspeeddingtimer = 0.
-    self.cruisegap_timer = 0.
 
   @staticmethod
   def compute_gb(accel, speed):
@@ -168,7 +167,7 @@ class CarInterface(CarInterfaceBase):
     ret.lvrAvailable = True if 871 in fingerprint[0] else False
     ret.evgearAvailable = True if 882 in fingerprint[0] else False
     ret.emsAvailable = True if 608 and 809 in fingerprint[0] else False
-    ret.cruiseGapDist = 4
+    ret.cruiseGapDist = 0
 
     if True:
       ret.sccBus = 2 if 1057 in fingerprint[2] and False else 0 if 1057 in fingerprint[0] else -1
@@ -300,12 +299,9 @@ class CarInterface(CarInterfaceBase):
           events.add(EventName.buttonCancel)
           events.add(EventName.pcmDisable)
         if b.type == ButtonType.gapAdjustCruise and b.pressed:
-          self.cruisegap_timer += 1
-          if self.cruisegap_timer > 6:
-            ret.cruiseGapDist -= 1
-            self.cruisegap_timer = 0
-            if ret.cruiseGapDist < 1:
-              ret.cruiseGapDist = 4
+          ret.cruiseGapDist += 1
+          if ret.cruiseGapDist > 5:
+            ret.cruiseGapDist = 0
 
     ret.events = events.to_msg()
     self.CS.out = ret.as_reader()
