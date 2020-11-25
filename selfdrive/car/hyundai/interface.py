@@ -291,8 +291,6 @@ class CarInterface(CarInterfaceBase):
         if b.type == ButtonType.altButton3 and b.pressed:
           events.add(EventName.buttonCancel)
           events.add(EventName.pcmDisable)
-        if b.type == ButtonType.gapAdjustCruise and b.pressed:
-          events.add(EventName.gapChange)
 
     ret.events = events.to_msg()
     self.CS.out = ret.as_reader()
