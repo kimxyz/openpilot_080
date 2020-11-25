@@ -259,12 +259,13 @@ class CarController():
     #    self.gapcount = 0
 
     if (EventName.gapChange in Events().names) and self.gapcount == 0:
-      self.gapcount = 1
       self.gapsettingdance -= 1
+      self.gapcount = 1
       if self.gapsettingdance < 1:
         self.gapsettingdance = 4
     else:
       self.gapcount = 0
+    print('gap={} cnt={}'.format(self.gapsettingdance, self.gapcount))
 
     self.apply_steer_last = apply_steer
 
