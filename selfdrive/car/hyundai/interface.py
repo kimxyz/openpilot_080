@@ -306,6 +306,7 @@ class CarInterface(CarInterfaceBase):
             ret.cruiseGapDist -= 1
             if ret.cruiseGapDist < 1:
               ret.cruiseGapDist = 4
+          print('gapsettinginter={}'.format(ret.cruiseGapDist))
 
     ret.events = events.to_msg()
     self.CS.out = ret.as_reader()
