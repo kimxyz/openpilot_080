@@ -156,7 +156,7 @@ class LongControl():
     else:
       self.long_stat = "---"
 
-    str_log3 = 'L={:s}  G={:01.2f}/{:01.2f}  B={:01.2f}/{:01.2f}  GB={:01.2f}/{:01.2f}  VTG={:04.1f}  DF={:0.1f}'.format(self.long_stat, final_gas, gas_max, abs(final_brake), abs(brake_max), output_gb, self.last_output_gb, self.v_pid, dfactor)
+    str_log3 = 'L={:s}  G={:01.2f}/{:01.2f}  B={:01.2f}/{:01.2f}  GB={:01.2f}/{:01.2f}  VTG={:04.1f}  DF={:0.2f}'.format(self.long_stat, final_gas, gas_max, abs(final_brake), abs(brake_max), output_gb, self.last_output_gb, self.v_pid, dfactor)
     trace1.printf2('{}'.format(str_log3))
 
     return final_gas, final_brake
