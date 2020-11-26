@@ -26,9 +26,9 @@ _A_CRUISE_MIN_BP = [   0., 5.,  10., 20.,  40.]
 
 # need fast accel at very low speed for stop and go
 # make sure these accelerations are smaller than mpc limits
-_A_CRUISE_MAX_V = [1.6, 1.4, 0.7, .4]
-_A_CRUISE_MAX_V_FOLLOWING = [1.7, 1.65, 0.7, .5]
-_A_CRUISE_MAX_BP = [0.,  6.4, 22.5, 40.]
+_A_CRUISE_MAX_V = [1.5, 2., 0.65, .4]
+_A_CRUISE_MAX_V_FOLLOWING = [2., 2., 0.6, .4]
+_A_CRUISE_MAX_BP = [0., 5., 32.5, 40.]
 
 # Lookup table for turns
 _A_TOTAL_MAX_V = [2.2, 4.15]
@@ -147,7 +147,7 @@ class Planner():
     lead_2 = sm['radarState'].leadTwo
 
     enabled = (long_control_state == LongCtrlState.pid) or (long_control_state == LongCtrlState.stopping)
-    following = lead_1.status and lead_1.dRel < 45.0 and lead_1.vLeadK > v_ego and lead_1.aLeadK > 0.0
+    following = lead_1.status and lead_1.dRel < 55.0 and lead_1.vLeadK > v_ego and lead_1.aLeadK > 0.0
 
     # Calculate speed for normal cruise control
     if enabled and not self.first_loop and not sm['carState'].gasPressed:

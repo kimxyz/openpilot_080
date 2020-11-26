@@ -11,7 +11,7 @@ STARTING_TARGET_SPEED = 0.5
 BRAKE_THRESHOLD_TO_PID = 0.2
 
 STOPPING_BRAKE_RATE = 0.2  # brake_travel/s while trying to stop
-STARTING_BRAKE_RATE = 0.8  # brake_travel/s while releasing on restart
+STARTING_BRAKE_RATE = 2  # brake_travel/s while releasing on restart
 BRAKE_STOPPING_TARGET = 0.5  # apply at least this amount of brake to maintain the vehicle stationary
 
 RATE = 100.0
@@ -71,7 +71,7 @@ class LongControl():
     self.pid.reset()
     self.v_pid = v_pid
 
-  def update(self, active, CS, v_target, v_target_future, a_target, CP):
+  def update(self, active, CS, v_target, v_target_future, a_target, CP, hasLead, radarState):
     """Update longitudinal control. This updates the state machine and runs a PID loop"""
     # Actuation limits
     gas_max = interp(CS.vEgo, CP.gasMaxBP, CP.gasMaxV)
@@ -79,6 +79,13 @@ class LongControl():
 
     # Update state machine
     output_gb = self.last_output_gb
+    if radarState is None:
+      dRel = 200
+      vLead = 0
+    else:
+      dRel = radarState.leadOne.dRel
+      vLead = radarState.leadOne.vLead
+
     self.long_control_state = long_control_state_trans(active, self.long_control_state, CS.vEgo,
                                                        v_target_future, self.v_pid, output_gb,
                                                        CS.brakePressed, CS.cruiseState.standstill)
@@ -108,8 +115,16 @@ class LongControl():
     # Intention is to stop, switch to a different brake control until we stop
     elif self.long_control_state == LongCtrlState.stopping:
       # Keep applying brakes until the car is stopped
+      dfactor = 0.
+      vfactor = 0.
+      if hasLead:
+        dfactor = interp(dRel, [30, 5], [0, 0.1])
+        if vLead < 0:
+          vfactor = interp(abs(vLead), [1, 15], [1, 2])
+        dfactor = dfactor * vfactor
+      
       if not CS.standstill or output_gb > -BRAKE_STOPPING_TARGET:
-        output_gb -= STOPPING_BRAKE_RATE / RATE
+        output_gb -= (STOPPING_BRAKE_RATE + dfactor) / RATE
       output_gb = clip(output_gb, -brake_max, gas_max)
 
       self.reset(CS.vEgo)
