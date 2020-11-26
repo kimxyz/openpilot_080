@@ -2,6 +2,9 @@ from cereal import log
 from common.numpy_fast import clip, interp
 from selfdrive.controls.lib.pid import LongPIDController
 
+import common.log as trace1
+import common.CTime1000 as tm
+
 LongCtrlState = log.ControlsState.LongControlState
 
 STOPPING_EGO_SPEED = 0.5
