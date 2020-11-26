@@ -50,7 +50,8 @@ class CarInterface(CarInterfaceBase):
     ret.steerLimitTimer = int(params.get('SteerLimitTimerAdj')) * 0.01
     ret.steerRatio = int(params.get('SteerRatioAdj')) * 0.1
 
-    #오파 차간거리 조절 파라미터, 현재 브레이킹이 원활하지 않습니다. 사용에 주의를 요합니다. 고오급개발자의 손이 필요할듯 하네요^^
+    # 오파 차간거리 조절 파라미터, 현재 브레이킹이 원활하지 않습니다. 사용에 주의를 요합니다. 고오급개발자의 손이 필요할듯 하네요^^
+    # selfdrive/controls/lib 내 longcontrol.py, long_mpc.py, planner.py 참조
     ret.longitudinalTuning.kpBP = [0., 1., 10., 35.]
     ret.longitudinalTuning.kpV = [0.12, 1.3, .85, .65]
     ret.longitudinalTuning.kiBP = [0., 15., 35.]
