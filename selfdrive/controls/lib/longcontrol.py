@@ -68,6 +68,7 @@ class LongControl():
                                  convert=compute_gb)
     self.v_pid = 0.0
     self.last_output_gb = 0.0
+    self.long_stat = ""
 
   def reset(self, v_pid):
     """Reset PID controller and change setpoint"""
@@ -141,5 +142,20 @@ class LongControl():
     self.last_output_gb = output_gb
     final_gas = clip(output_gb, 0., gas_max)
     final_brake = -clip(output_gb, -brake_max, 0.)
+
+
+    if self.long_control_state == LongCtrlState.stopping:
+      self.long_stat = "STP"
+    elif self.long_control_state == LongCtrlState.starting:
+      self.long_stat = "STR"
+    elif self.long_control_state == LongCtrlState.pid:
+      self.long_stat = "PID"
+    elif self.long_control_state == LongCtrlState.off:
+      self.long_stat = "OFF"
+    else:
+      self.long_stat = "---"
+
+    str_log3 = 'L={:s}  G={:01.2f}/{:01.2f}  B={:01.2f}/{:01.2f}  GB={:01.2f}/{:01.2f}  VTG={:04.1f}  DF={:0.1f}'.format(self.long_stat, final_gas, gas_max, abs(final_brake), abs(brake_max), output_gb, self.last_output_gb, self.v_pid, dfactor)
+    trace1.printf2('{}'.format(str_log3))
 
     return final_gas, final_brake
