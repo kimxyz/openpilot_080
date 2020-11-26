@@ -520,6 +520,13 @@ EVENTS: Dict[int, Dict[str, Union[Alert, Callable[[Any, messaging.SubMaster, boo
       AlertStatus.normal, AlertSize.full,
       Priority.LOW, VisualAlert.none, AudibleAlert.chimeWarning2Repeat, .1, .1, .1),
   },
+  EventName.standStill: {
+    ET.WARNING: Alert(
+      "일시 정차",
+      "앞차 출발 시 자동 출발합니다",
+      AlertStatus.userPrompt, AlertSize.mid,
+      Priority.LOW, VisualAlert.none, AudibleAlert.none, 0., 0., .2),
+  },
 
   # ********** events that affect controls state transitions **********
 

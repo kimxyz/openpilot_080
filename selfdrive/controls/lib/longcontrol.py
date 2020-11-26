@@ -1,7 +1,8 @@
-from cereal import log
+from cereal import car, log
 from common.numpy_fast import clip, interp
 from selfdrive.controls.lib.pid import LongPIDController
 
+from selfdrive.controls.lib.events import Events
 import common.log as trace1
 import common.CTime1000 as tm
 
@@ -69,15 +70,13 @@ class LongControl():
     self.v_pid = 0.0
     self.last_output_gb = 0.0
     self.long_stat = ""
-    self.dfactor = 0
-    self.vfactor = 0
 
   def reset(self, v_pid):
     """Reset PID controller and change setpoint"""
     self.pid.reset()
     self.v_pid = v_pid
 
-  def update(self, active, CS, v_target, v_target_future, a_target, CP, hasLead, radarState):
+  def update(self, active, CS, v_target, v_target_future, a_target, CP):
     """Update longitudinal control. This updates the state machine and runs a PID loop"""
     # Actuation limits
     gas_max = interp(CS.vEgo, CP.gasMaxBP, CP.gasMaxV)
@@ -85,12 +84,6 @@ class LongControl():
 
     # Update state machine
     output_gb = self.last_output_gb
-    if radarState is None:
-      dRel = 200
-      vLead = 0
-    else:
-      dRel = radarState.leadOne.dRel
-      vLead = radarState.leadOne.vLead
 
     self.long_control_state = long_control_state_trans(active, self.long_control_state, CS.vEgo,
                                                        v_target_future, self.v_pid, output_gb,
@@ -117,13 +110,6 @@ class LongControl():
 
       if prevent_overshoot:
         output_gb = min(output_gb, 0.0)
-      else:
-        if hasLead:
-          self.dfactor = interp(dRel, [35, 5], [0, 0.2])
-        if vLead < 0:
-          self.vfactor = interp(abs(vLead), [1, 15], [1, 2])
-          self.dfactor = self.dfactor * self.vfactor
-          output_gb = output_gb - self.dfactor
 
     # Intention is to stop, switch to a different brake control until we stop
     elif self.long_control_state == LongCtrlState.stopping:
@@ -147,6 +133,9 @@ class LongControl():
 
     if self.long_control_state == LongCtrlState.stopping:
       self.long_stat = "STP"
+      if CS.cruiseState.standstill:
+        events = Events()
+        events.add(car.CarEvent.EventName.standStill)
     elif self.long_control_state == LongCtrlState.starting:
       self.long_stat = "STR"
     elif self.long_control_state == LongCtrlState.pid:
@@ -156,7 +145,7 @@ class LongControl():
     else:
       self.long_stat = "---"
 
-    str_log3 = 'L={:s}  G={:01.2f}/{:01.2f}  B={:01.2f}/{:01.2f}  GB={:01.2f}/{:01.2f}  VTG={:04.1f}  DF={:0.1f}'.format(self.long_stat, final_gas, gas_max, abs(final_brake), abs(brake_max), output_gb, self.last_output_gb, v_target, self.dfactor)
+    str_log3 = 'L={:s}  GS={:01.2f}/{:01.2f}  BK={:01.2f}/{:01.2f}  GB={:01.2f}/{:01.2f}  VTG={:04.1f}'.format(self.long_stat, final_gas, gas_max, abs(final_brake), abs(brake_max), output_gb, self.last_output_gb, v_target)
     trace1.printf2('{}'.format(str_log3))
 
     return final_gas, final_brake

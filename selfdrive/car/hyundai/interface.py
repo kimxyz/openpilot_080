@@ -53,7 +53,7 @@ class CarInterface(CarInterfaceBase):
     # 오파 차간거리 조절 파라미터, 현재 브레이킹이 원활하지 않습니다. 사용에 주의를 요합니다. 고오급개발자의 손이 필요할듯 하네요^^
     # selfdrive/controls/lib 내 longcontrol.py, long_mpc.py, planner.py 참조
     ret.longitudinalTuning.kpBP = [0., 1., 10., 35.]
-    ret.longitudinalTuning.kpV = [0.12, 1.3, .85, .65]
+    ret.longitudinalTuning.kpV = [0.5, 1.2, .75, .55]
     ret.longitudinalTuning.kiBP = [0., 15., 35.]
     ret.longitudinalTuning.kiV = [.35, .25, .15]
 
@@ -61,9 +61,9 @@ class CarInterface(CarInterfaceBase):
     ret.longitudinalTuning.deadzoneV = [0.00, 0.00]
   
     ret.gasMaxBP = [0., 1., 1.1, 15., 40.]
-    ret.gasMaxV = [2.5, 2.5, 2.5, 1.78, 1.4]
-    ret.brakeMaxBP = [0., 5., 5.1]
-    ret.brakeMaxV = [3.5, 3.5, 3.5]  # safety limits to stop unintended deceleration
+    ret.gasMaxV = [2.5, 2.5, 2.5, 1.7, 1.4]
+    ret.brakeMaxBP = [0., 5.]
+    ret.brakeMaxV = [3.5, 3.5]  # safety limits to stop unintended deceleration
 
     ret.steerMaxV = [LqrSteerMaxV]
     ret.steerMaxBP = [0.]
