@@ -455,15 +455,15 @@ static void ui_draw_debug(UIState *s)
     }
     if (scene.long_plan_source == 0) {
       ui_print(s, ui_viz_rx, ui_viz_ry+570, "LPS:none");
-    } else if (s->long_plan_source == 1) {
+    } else if (scene.long_plan_source == 1) {
       ui_print(s, ui_viz_rx, ui_viz_ry+570, "LPS:cruise");
-    } else if (s->long_plan_source == 2) {
+    } else if (scene.long_plan_source == 2) {
       ui_print(s, ui_viz_rx, ui_viz_ry+570, "LPS:mpc1");
-    } else if (s->long_plan_source == 3) {
+    } else if (scene.long_plan_source == 3) {
       ui_print(s, ui_viz_rx, ui_viz_ry+570, "LPS:mpc2");
-    } else if (s->long_plan_source == 4) {
+    } else if (scene.long_plan_source == 4) {
       ui_print(s, ui_viz_rx, ui_viz_ry+570, "LPS:mpc3");
-    } else if (s->long_plan_source == 5) {
+    } else if (scene.long_plan_source == 5) {
       ui_print(s, ui_viz_rx, ui_viz_ry+570, "LPS:model");
     }
 
