@@ -115,6 +115,8 @@ class Controls:
       self.LaC = LatControlLQR(self.CP)
       self.lateral_control_method = 2
 
+    self.long_plan_source = 0
+
     self.state = State.disabled
     self.enabled = False
     self.active = False
@@ -522,6 +524,20 @@ class Controls:
     controlsState.alertTextMsg1 = self.log_alertTextMsg1
     controlsState.alertTextMsg2 = self.log_alertTextMsg2
     controlsState.lateralControlMethod = self.lateral_control_method
+
+    if self.sm['plan'].longitudinalPlanSource == LongitudinalPlanSource.cruise:
+      self.long_plan_source = 1
+    elif self.sm['plan'].longitudinalPlanSource == LongitudinalPlanSource.mpc1:
+      self.long_plan_source = 2
+    elif self.sm['plan'].longitudinalPlanSource == LongitudinalPlanSource.mpc2:
+      self.long_plan_source = 3
+    elif self.sm['plan'].longitudinalPlanSource == LongitudinalPlanSource.mpc3:
+      self.long_plan_source = 4
+    elif self.sm['plan'].longitudinalPlanSource == LongitudinalPlanSource.model:
+      self.long_plan_source = 5
+    else:
+      self.long_plan_source = 0
+    controlsState.longPlanSource = self.long_plan_source
 
     if self.CP.lateralTuning.which() == 'pid':
       controlsState.lateralControlState.pidState = lac_log

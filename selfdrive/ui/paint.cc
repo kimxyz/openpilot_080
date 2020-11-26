@@ -453,6 +453,20 @@ static void ui_draw_debug(UIState *s)
     } else if (s->lateral_control == 2) {
       ui_print(s, ui_viz_rx, ui_viz_ry+520, "LaC:LQR");
     }
+    if (scene.long_plan_source == 0) {
+      ui_print(s, ui_viz_rx, ui_viz_ry+570, "LPS:none");
+    } else if (s->long_plan_source == 1) {
+      ui_print(s, ui_viz_rx, ui_viz_ry+570, "LPS:cruise");
+    } else if (s->long_plan_source == 2) {
+      ui_print(s, ui_viz_rx, ui_viz_ry+570, "LPS:mpc1");
+    } else if (s->long_plan_source == 3) {
+      ui_print(s, ui_viz_rx, ui_viz_ry+570, "LPS:mpc2");
+    } else if (s->long_plan_source == 4) {
+      ui_print(s, ui_viz_rx, ui_viz_ry+570, "LPS:mpc3");
+    } else if (s->long_plan_source == 5) {
+      ui_print(s, ui_viz_rx, ui_viz_ry+570, "LPS:model");
+    }
+
     nvgFontSize(s->vg, 45);
     nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
     ui_print(s, ui_viz_rx_center, ui_viz_ry+650, "커브");
@@ -595,7 +609,7 @@ static void ui_draw_vision_event(UIState *s) {
   const int viz_event_w = 220;
   const int viz_event_x = s->scene.viz_rect.right() - (viz_event_w + bdr_s*2);
   const int viz_event_y = s->scene.viz_rect.y + (bdr_s*1.5);
-  if (s->scene.controls_state.getDecelForModel() && s->scene.controls_state.getEnabled()) {
+  if (s->scene.controls_state.getDecelForModel() && s->scene.controls_state.getEnabled() && false) {
     // draw winding road sign
     const int img_turn_size = 170;
     ui_draw_image(s->vg, viz_event_x + (img_turn_size / 4), viz_event_y + bdr_s - 25, img_turn_size, img_turn_size, s->img_turn, 1.0f);

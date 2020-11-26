@@ -155,6 +155,7 @@ typedef struct UIScene {
   float tpmsPressureRr;
   int lateralControlMethod;
   float radarDistance;
+  int long_plan_source;
 
   cereal::HealthData::HwType hwType;
   int satelliteCount;
@@ -280,7 +281,6 @@ typedef struct UIState {
 
   int is_OpenpilotViewEnabled;
   int lateral_control;
-
 
   int nOpkrAutoScreenOff;
   int nOpkrUIBrightness;

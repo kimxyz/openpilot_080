@@ -555,6 +555,8 @@ struct ControlsState @0x97ff69c53601abf1 {
   alertTextMsg1  @58 :Text;
   alertTextMsg2  @59 :Text;
   lateralControlMethod  @60 :UInt8;
+  longPlanSource  @61 :UInt8;
+
   lateralControlState :union {
     indiState @52 :LateralINDIState;
     pidState @53 :LateralPIDState;
