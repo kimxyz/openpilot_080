@@ -10,11 +10,11 @@ LongCtrlState = log.ControlsState.LongControlState
 STOPPING_EGO_SPEED = 0.5
 MIN_CAN_SPEED = 0.3  # TODO: parametrize this in car interface
 STOPPING_TARGET_SPEED = MIN_CAN_SPEED + 0.01
-STARTING_TARGET_SPEED = 0.5
+STARTING_TARGET_SPEED = 0.1
 BRAKE_THRESHOLD_TO_PID = 0.2
 
-STOPPING_BRAKE_RATE = 0.2  # brake_travel/s while trying to stop
-STARTING_BRAKE_RATE = 2  # brake_travel/s while releasing on restart
+STOPPING_BRAKE_RATE = 0.5  # brake_travel/s while trying to stop
+STARTING_BRAKE_RATE = 6  # brake_travel/s while releasing on restart
 BRAKE_STOPPING_TARGET = 0.5  # apply at least this amount of brake to maintain the vehicle stationary
 
 RATE = 100.0
@@ -23,7 +23,7 @@ RATE = 100.0
 def long_control_state_trans(active, long_control_state, v_ego, v_target, v_pid,
                              output_gb, brake_pressed, cruise_standstill):
   """Update longitudinal control state machine"""
-  stopping_condition = (v_ego < 2.0 and cruise_standstill) or \
+  stopping_condition = (v_ego < 1.3 and cruise_standstill) or \
                        (v_ego < STOPPING_EGO_SPEED and
                         ((v_pid < STOPPING_TARGET_SPEED and v_target < STOPPING_TARGET_SPEED) or
                         brake_pressed))
@@ -69,6 +69,8 @@ class LongControl():
     self.v_pid = 0.0
     self.last_output_gb = 0.0
     self.long_stat = ""
+    self.dfactor = 0
+    self.vfactor = 0
 
   def reset(self, v_pid):
     """Reset PID controller and change setpoint"""
@@ -80,9 +82,6 @@ class LongControl():
     # Actuation limits
     gas_max = interp(CS.vEgo, CP.gasMaxBP, CP.gasMaxV)
     brake_max = interp(CS.vEgo, CP.brakeMaxBP, CP.brakeMaxV)
-
-    dfactor = 0.
-    vfactor = 0.
 
     # Update state machine
     output_gb = self.last_output_gb
@@ -118,18 +117,19 @@ class LongControl():
 
       if prevent_overshoot:
         output_gb = min(output_gb, 0.0)
+      else:
+        if hasLead:
+          self.dfactor = interp(dRel, [35, 5], [0, 0.2])
+        if vLead < 0:
+          self.vfactor = interp(abs(vLead), [1, 15], [1, 2])
+          self.dfactor = self.dfactor * self.vfactor
+          output_gb = output_gb - self.dfactor
 
     # Intention is to stop, switch to a different brake control until we stop
     elif self.long_control_state == LongCtrlState.stopping:
       # Keep applying brakes until the car is stopped
-      if hasLead:
-        dfactor = interp(dRel, [30, 5], [0, 0.1])
-        if vLead < 0:
-          vfactor = interp(abs(vLead), [1, 15], [1, 2])
-        dfactor = dfactor * vfactor
-      
       if not CS.standstill or output_gb > -BRAKE_STOPPING_TARGET:
-        output_gb -= (STOPPING_BRAKE_RATE + dfactor) / RATE
+        output_gb -= STOPPING_BRAKE_RATE / RATE
       output_gb = clip(output_gb, -brake_max, gas_max)
 
       self.reset(CS.vEgo)
@@ -156,7 +156,7 @@ class LongControl():
     else:
       self.long_stat = "---"
 
-    str_log3 = 'L={:s}  G={:01.2f}/{:01.2f}  B={:01.2f}/{:01.2f}  GB={:01.2f}/{:01.2f}  VTG={:04.1f}  DF={:0.2f}'.format(self.long_stat, final_gas, gas_max, abs(final_brake), abs(brake_max), output_gb, self.last_output_gb, self.v_pid, dfactor)
+    str_log3 = 'L={:s}  G={:01.2f}/{:01.2f}  B={:01.2f}/{:01.2f}  GB={:01.2f}/{:01.2f}  VTG={:04.1f}  DF={:0.1f}'.format(self.long_stat, final_gas, gas_max, abs(final_brake), abs(brake_max), output_gb, self.last_output_gb, v_target, self.dfactor)
     trace1.printf2('{}'.format(str_log3))
 
     return final_gas, final_brake
