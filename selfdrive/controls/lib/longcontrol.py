@@ -81,6 +81,9 @@ class LongControl():
     gas_max = interp(CS.vEgo, CP.gasMaxBP, CP.gasMaxV)
     brake_max = interp(CS.vEgo, CP.brakeMaxBP, CP.brakeMaxV)
 
+    dfactor = 0.
+    vfactor = 0.
+
     # Update state machine
     output_gb = self.last_output_gb
     if radarState is None:
@@ -119,8 +122,6 @@ class LongControl():
     # Intention is to stop, switch to a different brake control until we stop
     elif self.long_control_state == LongCtrlState.stopping:
       # Keep applying brakes until the car is stopped
-      dfactor = 0.
-      vfactor = 0.
       if hasLead:
         dfactor = interp(dRel, [30, 5], [0, 0.1])
         if vLead < 0:
