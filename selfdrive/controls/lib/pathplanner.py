@@ -88,6 +88,7 @@ class PathPlanner():
     self.angle_differ_range = [0, 45]
     self.steerRatio_range = [CP.steerRatio, 17.5]
     self.new_steerRatio = CP.steerRatio
+    self.new_steerRatio_prev = CP.steerRatio
 
     self.new_steer_rate_cost = CP.steerRateCost
     #self.steer_rate_cost_range = [CP.steerRateCost, 0.1]
@@ -140,8 +141,10 @@ class PathPlanner():
 
     self.angle_diff = abs(anglesteer_desire) - abs(anglesteer_current)
 
-    if abs(output_scale) >= 0.9 and v_ego > 8:
-      self.new_steerRatio = interp(self.angle_diff, self.angle_differ_range, self.steerRatio_range)
+    if abs(output_scale) >= 1 and v_ego > 8:
+      self.new_steerRatio_prev = interp(self.angle_diff, self.angle_differ_range, self.steerRatio_range)
+      if self.new_steerRatio_prev > self.new_steerRatio:
+        self.new_steerRatio = self.new_steerRatio_prev
       #self.new_steer_rate_cost = interp(self.angle_diff, self.angle_differ_range, self.steer_rate_cost_range)
     #if abs(output_scale) >= 1 and v_ego > 8 and ((abs(anglesteer_desire) - abs(anglesteer_current)) > 20):
     #  self.mpc_frame += 1
@@ -156,7 +159,7 @@ class PathPlanner():
     #    self.mpc_frame = 0
     else:
       self.mpc_frame += 1
-      if self.mpc_frame % 5 == 0:
+      if self.mpc_frame % 10 == 0:
         self.new_steerRatio -= 0.1
         if self.new_steerRatio <= CP.steerRatio:
           self.new_steerRatio = CP.steerRatio
@@ -221,16 +224,16 @@ class PathPlanner():
         self.lane_change_adjust_new = interp(v_ego, self.lane_change_adjust_vel, self.lane_change_adjust)
         self.lane_change_ll_prob = max(self.lane_change_ll_prob - self.lane_change_adjust_new*DT_MDL, 0.0)
         # 98% certainty
-        if lane_change_prob < 0.02 and self.lane_change_ll_prob < 0.01:
+        if lane_change_prob < 0.03 and self.lane_change_ll_prob < 0.02:
           self.lane_change_state = LaneChangeState.laneChangeFinishing
 
       # finishing
       elif self.lane_change_state == LaneChangeState.laneChangeFinishing:
         # fade in laneline over 1s
         self.lane_change_ll_prob = min(self.lane_change_ll_prob + DT_MDL, 1.0)
-        if one_blinker and self.lane_change_ll_prob > 0.99:
+        if one_blinker and self.lane_change_ll_prob > 0.98:
           self.lane_change_state = LaneChangeState.preLaneChange
-        elif self.lane_change_ll_prob > 0.99:
+        elif self.lane_change_ll_prob > 0.98:
           self.lane_change_state = LaneChangeState.off
 
     if self.lane_change_state in [LaneChangeState.off, LaneChangeState.preLaneChange]:
@@ -283,7 +286,7 @@ class PathPlanner():
       self.solution_invalid_cnt += 1
     else:
       self.solution_invalid_cnt = 0
-    plan_solution_valid = self.solution_invalid_cnt < 2
+    plan_solution_valid = self.solution_invalid_cnt < 3
 
     plan_send = messaging.new_message('pathPlan')
     plan_send.valid = sm.all_alive_and_valid(service_list=['carState', 'controlsState', 'liveParameters', 'model'])

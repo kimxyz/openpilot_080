@@ -3,7 +3,7 @@ from selfdrive.controls.lib.drive_helpers import get_steer_max
 from cereal import car
 from cereal import log
 from common.params import Params
-
+from common.numpy_fast import interp
 
 class LatControlPID():
   def __init__(self, CP):
@@ -12,6 +12,9 @@ class LatControlPID():
                             k_f=CP.lateralTuning.pid.kf, pos_limit=1.0, neg_limit=-1.0,
                             sat_limit=CP.steerLimitTimer)
     self.angle_steers_des = 0.
+    self.speed_range = [0, 17]
+    self.steer_feedforward_param = [1.3, 2]
+    self.steer_feedforward_value = 2
 
   def reset(self):
     self.pid.reset()
@@ -35,8 +38,8 @@ class LatControlPID():
       if CP.steerControlType == car.CarParams.SteerControlType.torque:
         # TODO: feedforward something based on path_plan.rateSteers
         steer_feedforward -= path_plan.angleOffset   # subtract the offset, since it does not contribute to resistive torque
-        _c1, _c2, _c3 = [0.34365576041121065, 12.845373070976711, 51.63304088261174]
-        steer_feedforward *= _c1 * CS.vEgo ** 2 + _c2 * CS.vEgo + _c3
+        self.steer_feedforward_value = interp(CS.vEgo, self.speed_range, self.steer_feedforward_param)
+        steer_feedforward *= CS.vEgo**self.steer_feedforward_value  # proportional to realigning tire momentum (~ lateral accel)
       deadzone = int(Params().get('IgnoreZone')) * 0.1
 
       check_saturation = (CS.vEgo > 10) and not CS.steeringRateLimited and not CS.steeringPressed

@@ -128,6 +128,9 @@ class CarController():
     self.steerMax = int(self.params.get('SteerMaxBaseAdj'))
     self.steerDeltaUp = int(self.params.get('SteerDeltaUpAdj'))
     self.steerDeltaDown = int(self.params.get('SteerDeltaDownAdj'))
+    self.steerMax_prev = int(self.params.get('SteerMaxBaseAdj'))
+    self.steerDeltaUp_prev = int(self.params.get('SteerDeltaUpAdj'))
+    self.steerDeltaDown_prev = int(self.params.get('SteerDeltaDownAdj'))
     self.steerMax_timer = 0
     self.steerDeltaUp_timer = 0
     self.steerDeltaDown_timer = 0
@@ -165,15 +168,21 @@ class CarController():
     self.angle_steers = CS.out.steeringAngle
     self.angle_diff = abs(self.angle_steers_des) - abs(self.angle_steers)
 
-    if abs(self.outScale) >= 0.9 and CS.out.vEgo > 8:
-      self.steerMax = interp(self.angle_diff, self.angle_differ_range, self.steerMax_range)
-      self.steerDeltaUp = interp(self.angle_diff, self.angle_differ_range, self.steerDeltaUp_range)
-      self.steerDeltaDown = interp(self.angle_diff, self.angle_differ_range, self.steerDeltaDown_range)
+    if abs(self.outScale) >= 1 and CS.out.vEgo > 8:
+      self.steerMax_prev = interp(self.angle_diff, self.angle_differ_range, self.steerMax_range)
+      if self.steerMax_prev > self.steerMax:
+        self.steerMax = self.steerMax_prev
+      self.steerDeltaUp_prev = interp(self.angle_diff, self.angle_differ_range, self.steerDeltaUp_range)
+      if self.steerDeltaUp_prev > self.steerDeltaUp:
+        self.steerDeltaUp = self.steerDeltaUp_prev
+      self.steerDeltaDown_prev = interp(self.angle_diff, self.angle_differ_range, self.steerDeltaDown_range)
+      if self.steerDeltaDown_prev > self.steerDeltaDown:
+        self.steerDeltaDown = self.steerDeltaDown_prev
     else:
       self.steerMax_timer += 1
       self.steerDeltaUp_timer += 1
       self.steerDeltaDown_timer += 1
-      if self.steerMax_timer > 10:
+      if self.steerMax_timer > 20:
         self.steerMax -= 5
         self.steerMax_timer = 0
         if self.steerMax < int(self.params.get('SteerMaxBaseAdj')):
