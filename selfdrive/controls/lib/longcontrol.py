@@ -60,7 +60,7 @@ class LongControl():
   def __init__(self, CP, compute_gb):
     self.long_control_state = LongCtrlState.off  # initialized to off
     kdBP = [0., 16., 35.]
-    kdV = [0.05, 1.0285 * 1.45, 1.8975 * 0.8]
+    kdV = [0.1, 1.5, 2.0]
     self.pid = LongPIDController((CP.longitudinalTuning.kpBP, CP.longitudinalTuning.kpV),
                                  (CP.longitudinalTuning.kiBP, CP.longitudinalTuning.kiV),
                                  (kdBP, kdV),
@@ -145,7 +145,7 @@ class LongControl():
     else:
       self.long_stat = "---"
 
-    str_log3 = 'L={:s}  GS={:01.2f}/{:01.2f}  BK={:01.2f}/{:01.2f}  GB={:01.2f}/{:01.2f}  VTG={:04.1f}'.format(self.long_stat, final_gas, gas_max, abs(final_brake), abs(brake_max), output_gb, self.last_output_gb, v_target)
+    str_log3 = 'LS={:s}  GS={:01.2f}/{:01.2f}  BK={:01.2f}/{:01.2f}  GB={:01.2f}  TG=V:{:04.1f}/F:{:04.1f}/A:{:04.1f}'.format(self.long_stat, final_gas, gas_max, abs(final_brake), abs(brake_max), output_gb, v_target, v_target_future, a_target)
     trace1.printf2('{}'.format(str_log3))
 
     return final_gas, final_brake
